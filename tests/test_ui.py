@@ -1,8 +1,7 @@
 import unittest
-import os
-import tempfile
+from unittest.mock import patch, MagicMock
+import customtkinter as ctk
 import pandas as pd
-from unittest.mock import MagicMock, patch
 from src.ui import App
 
 
@@ -90,10 +89,7 @@ class TestApp(unittest.TestCase):
         # Check if default tab is set
         self.assertEqual(self.app.tabview.get(), "Statistics")
 
-    @patch('src.ui.create_customer_pie_chart')
-    @patch('src.ui.create_daily_line_chart')
-    @patch('src.ui.create_project_bar_chart')
-    def test_refresh_data(self, mock_project_chart, mock_daily_chart, mock_customer_chart):
+    def test_refresh_data(self):
         """Test refresh data functionality"""
         # Mock data for chart updates
         customer_data = pd.DataFrame({'Kunden': ['A'], 'Minutes': [60]})
@@ -118,11 +114,6 @@ class TestApp(unittest.TestCase):
         self.mock_data_manager.get_time_by_customer.assert_called_once()
         self.mock_data_manager.get_time_by_day.assert_called_once()
         self.mock_data_manager.get_time_by_project.assert_called_once()
-        
-        # Verify charts were updated
-        mock_customer_chart.assert_called_once()
-        mock_daily_chart.assert_called_once()
-        mock_project_chart.assert_called_once()
 
     def test_set_customer(self):
         """Test customer selection functionality"""

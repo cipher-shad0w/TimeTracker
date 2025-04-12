@@ -8,7 +8,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 # Import the test modules
 from tests.test_data_manager import TestTimeDataManager
-from tests.test_charts import TestCharts
 from tests.test_tabs import TestTabs
 from tests.test_ui import TestApp
 from tests.test_integration import TestIntegration
@@ -21,7 +20,6 @@ def run_tests():
     
     # Add test cases
     test_suite.addTest(unittest.makeSuite(TestTimeDataManager))
-    test_suite.addTest(unittest.makeSuite(TestCharts))
     test_suite.addTest(unittest.makeSuite(TestTabs))
     test_suite.addTest(unittest.makeSuite(TestApp))
     test_suite.addTest(unittest.makeSuite(TestIntegration))

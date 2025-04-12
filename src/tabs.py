@@ -1,7 +1,9 @@
 import customtkinter as ctk
 import re
-# Change relative import to absolute import
-from src.charts import create_customer_pie_chart, create_daily_line_chart, create_project_bar_chart
+from tkinter import ttk
+import pandas as pd
+import numpy as np
+from src.data_manager import TimeDataManager
 
 
 def format_date_string(row):
@@ -120,50 +122,84 @@ def setup_time_entries_tab(tab, data_frame):
 
 
 def setup_statistics_tab(tab, data_manager, selected_customer=None):
-    """Shows the statistical charts"""
-    # Create a container for the charts
-    charts_container = ctk.CTkFrame(tab)
-    charts_container.pack(padx=20, pady=20, fill="both", expand=True)
+    """Shows the statistical information without charts"""
+    # Create a container for the statistics
+    stats_container = ctk.CTkFrame(tab)
+    stats_container.pack(padx=20, pady=20, fill="both", expand=True)
     
     # First row: Time per customer and Time per day
-    top_row = ctk.CTkFrame(charts_container)
+    top_row = ctk.CTkFrame(stats_container)
     top_row.pack(fill="both", expand=True, padx=10, pady=10)
     
     # Second row: Time per project
-    bottom_row = ctk.CTkFrame(charts_container)
+    bottom_row = ctk.CTkFrame(stats_container)
     bottom_row.pack(fill="both", expand=True, padx=10, pady=10)
     
-    # Chart 1: Time per customer (Pie Chart)
-    client_chart_frame = ctk.CTkFrame(top_row)
-    client_chart_frame.pack(side="left", fill="both", expand=True, padx=5, pady=5)
+    # Frame for customer statistics
+    client_stats_frame = ctk.CTkFrame(top_row)
+    client_stats_frame.pack(side="left", fill="both", expand=True, padx=5, pady=5)
     
-    # Chart 2: Time per day (Line Chart)
-    daily_chart_frame = ctk.CTkFrame(top_row)
-    daily_chart_frame.pack(side="right", fill="both", expand=True, padx=5, pady=5)
+    # Frame for daily statistics
+    daily_stats_frame = ctk.CTkFrame(top_row)
+    daily_stats_frame.pack(side="right", fill="both", expand=True, padx=5, pady=5)
     
-    # Chart 3: Time per project (Bar Chart)
-    project_chart_frame = ctk.CTkFrame(bottom_row)
-    project_chart_frame.pack(fill="both", expand=True, padx=5, pady=5)
+    # Frame for project statistics
+    project_stats_frame = ctk.CTkFrame(bottom_row)
+    project_stats_frame.pack(fill="both", expand=True, padx=5, pady=5)
     
-    # Create the charts with the appropriate data
+    # Get data based on filters
     customer = None if selected_customer == "All Customers" else selected_customer
     
-    # Customer chart
+    # Customer statistics
     customer_data = data_manager.get_time_by_customer()
-    create_customer_pie_chart(client_chart_frame, customer_data)
     
-    # Daily chart
+    # Add customer statistics title
+    ctk.CTkLabel(client_stats_frame, text="Time per Customer", font=("Arial", 14, "bold")).pack(pady=(10, 5))
+    
+    # Display customer data in text format
+    if not customer_data.empty:
+        for _, row in customer_data.iterrows():
+            customer_text = f"{row['Kunden']}: {row['Minutes']/60:.2f} hours ({row['Minutes']/customer_data['Minutes'].sum()*100:.1f}%)"
+            ctk.CTkLabel(client_stats_frame, text=customer_text).pack(anchor="w", padx=10, pady=2)
+    else:
+        ctk.CTkLabel(client_stats_frame, text="No data available").pack(pady=50)
+    
+    # Daily statistics
     daily_data = data_manager.get_time_by_day(customer)
-    create_daily_line_chart(daily_chart_frame, daily_data)
     
-    # Project chart
+    # Add daily statistics title
+    ctk.CTkLabel(daily_stats_frame, text="Time per Day", font=("Arial", 14, "bold")).pack(pady=(10, 5))
+    
+    # Display daily data in text format
+    if not daily_data.empty:
+        date_column = 'Date' if 'Date' in daily_data.columns else 'Start Date'
+        for _, row in daily_data.iterrows():
+            date_str = row[date_column].strftime('%d.%m.%Y') if hasattr(row[date_column], 'strftime') else str(row[date_column])
+            daily_text = f"{date_str}: {row['Minutes']/60:.2f} hours"
+            ctk.CTkLabel(daily_stats_frame, text=daily_text).pack(anchor="w", padx=10, pady=2)
+    else:
+        ctk.CTkLabel(daily_stats_frame, text="No data available").pack(pady=50)
+    
+    # Project statistics
     project_data = data_manager.get_time_by_project(customer)
-    create_project_bar_chart(project_chart_frame, project_data)
+    
+    # Add project statistics title
+    ctk.CTkLabel(project_stats_frame, text="Time per Project", font=("Arial", 14, "bold")).pack(pady=(10, 5))
+    
+    # Display project data in text format
+    if not project_data.empty:
+        # Limit to top 10 projects for better readability
+        top_projects = project_data.head(10)
+        for _, row in top_projects.iterrows():
+            project_text = f"{row['Auftrag']}: {row['Minutes']/60:.2f} hours"
+            ctk.CTkLabel(project_stats_frame, text=project_text).pack(anchor="w", padx=10, pady=2)
+    else:
+        ctk.CTkLabel(project_stats_frame, text="No data available").pack(pady=50)
     
     return {
-        'client_chart_frame': client_chart_frame,
-        'daily_chart_frame': daily_chart_frame,
-        'project_chart_frame': project_chart_frame
+        'client_stats_frame': client_stats_frame,
+        'daily_stats_frame': daily_stats_frame,
+        'project_stats_frame': project_stats_frame
     }
 
 
@@ -228,8 +264,6 @@ def setup_fibu_tab(tab):
     Shows the Fibu (accounting) yearly sheet with financial accounting data
     organized by months and customers
     """
-    import pandas as pd
-    from src.data_manager import TimeDataManager
     import os
     
     # Container for the Fibu section

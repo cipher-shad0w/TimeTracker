@@ -3,7 +3,6 @@ import os
 import datetime
 import re
 from src.data_manager import TimeDataManager
-from src.charts import create_customer_pie_chart, create_daily_line_chart, create_project_bar_chart
 from src.tabs import setup_time_entries_tab, setup_statistics_tab, setup_reports_tab, setup_team_tab, setup_fibu_tab
 
 
