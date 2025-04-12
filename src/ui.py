@@ -1,7 +1,7 @@
 import customtkinter as ctk
 import os
-import datetime  # Import für das aktuelle Datum und Jahr
-# Change relative imports to absolute imports
+import datetime
+import re
 from src.data_manager import TimeDataManager
 from src.charts import create_customer_pie_chart, create_daily_line_chart, create_project_bar_chart
 from src.tabs import setup_time_entries_tab, setup_statistics_tab, setup_reports_tab
@@ -58,49 +58,154 @@ class App(ctk.CTk):
 
     def _setup_left_panel(self):
         """Creates the controls in the left panel"""
-        # Customer selection
-        self.customer_label = ctk.CTkLabel(self.left_frame, text="Mandanten:")
-        self.customer_label.pack(pady=(10, 5))
-        
-        customers = ["Alle Mandanten"] + self.data_manager.customers
-        
-        self.optionmenu = ctk.CTkOptionMenu(
-            self.left_frame, values=customers, command=self.set_customer
+ 
+        # Kunden (Customers)
+        self.customers_label = ctk.CTkLabel(
+            self.left_frame, text="Select Customer:", font=("Arial", 16)
         )
-        self.optionmenu.set("Alle Mandanten")
-        self.optionmenu.pack(pady=(0, 20))
+        self.customers_label.pack(pady=(20, 10))
+        self.customers = ["All Customers"] + sorted(self.data_manager.customers)
+        self.customer_optionmenu = ctk.CTkOptionMenu(
+            self.left_frame,
+            values=self.customers,
+            command=self.on_customer_selection_change,
+        )
+        self.customer_optionmenu.pack(pady=(0, 20), padx=20)
+        self.customer_optionmenu.set("All Customers")
         
-        projects = self.data_manager.projects
-        
-        if not projects:
-            projects = ["Keine Projekte vorhanden"]
-        
-        self.project_label = ctk.CTkLabel(self.left_frame, text="Projekte:")
-        self.project_label.pack(pady=(10, 5))
+        # Projekte (Projects)
+        self.projects_label = ctk.CTkLabel(
+            self.left_frame, text="Select Project:", font=("Arial", 16)
+        )
+        self.projects_label.pack(pady=(10, 10))
+        self.projects = ["All Projects"] + sorted(self.data_manager.project_types)
         self.project_optionmenu = ctk.CTkOptionMenu(
-            self.left_frame, values=projects, command=self.set_customer
+            self.left_frame,
+            values=self.projects,
+            command=self.on_project_selection_change,
         )
-        self.project_optionmenu.pack(pady=(0, 20))
+        self.project_optionmenu.pack(pady=(0, 20), padx=20)
+        self.project_optionmenu.set("All Projects")
         
-        # Jahr selecter
-        current_year = str(datetime.datetime.now().year)
-        years = [current_year, "2022", "2021", "2020"]
-        self.year_label = ctk.CTkLabel(self.left_frame, text="Jahr:")
-        self.year_label.pack(pady=(10, 5))
-        self.year_optionmenu = ctk.CTkOptionMenu(
-            self.left_frame, values=years, command=self.set_year
+        # Auftrag (Orders) - Only show years
+        self.orders_label = ctk.CTkLabel(
+            self.left_frame, text="Select Order Year:", font=("Arial", 16)
         )
-        self.year_optionmenu.set(current_year)
-        self.year_optionmenu.pack(pady=(0, 20))
+        self.orders_label.pack(pady=(10, 10))
         
-        # Refresh button
-        refresh_button = ctk.CTkButton(
-            self.left_frame, text="Refresh", command=self.refresh_data
+        # Extract unique years from the "Auftrag" field
+        order_years = self._extract_unique_order_years()
+        self.orders = ["All Years"] + order_years
+        
+        self.order_optionmenu = ctk.CTkOptionMenu(
+            self.left_frame,
+            values=self.orders,
+            command=self.on_order_selection_change,
         )
-        refresh_button.pack(pady=(30, 10))
-
-    def set_year(self, year: str) -> None:
-        """Handles the year selection and updates the data"""
+        self.order_optionmenu.pack(pady=(0, 20), padx=20)
+        self.order_optionmenu.set("All Years")
+        
+    def _extract_unique_order_years(self):
+        """Extract unique years from the Auftrag field"""
+        years = set()
+        for order in self.data_manager._get_unique_values('Auftrag'):
+            if isinstance(order, str):
+                # Check for years in format 20XX
+                matches = re.findall(r'20\d{2}', order)
+                for match in matches:
+                    years.add(match)
+        
+        return sorted(list(years))
+        
+    def on_customer_selection_change(self, customer):
+        """Handle customer selection change and update related dropdowns"""
+        # Update project dropdown with projects related to this customer
+        if customer != "All Customers":
+            # Filter data by customer
+            customer_data = self.data_manager.filter_by_customer(customer)
+            
+            # Get projects for this customer
+            customer_projects = sorted(customer_data['Projekte'].unique().tolist())
+            self.project_optionmenu.configure(values=["All Projects"] + customer_projects)
+            self.project_optionmenu.set("All Projects")
+            
+            # Get order years for this customer
+            customer_orders = customer_data['Auftrag'].tolist()
+            order_years = set()
+            for order in customer_orders:
+                if isinstance(order, str):
+                    matches = re.findall(r'20\d{2}', order)
+                    for match in matches:
+                        order_years.add(match)
+            
+            self.order_optionmenu.configure(values=["All Years"] + sorted(list(order_years)))
+            self.order_optionmenu.set("All Years")
+        else:
+            # Reset to all projects and all order years
+            self.project_optionmenu.configure(values=["All Projects"] + sorted(self.data_manager.project_types))
+            self.project_optionmenu.set("All Projects")
+            
+            order_years = self._extract_unique_order_years()
+            self.order_optionmenu.configure(values=["All Years"] + order_years)
+            self.order_optionmenu.set("All Years")
+        
+        # Refresh data display
+        self.refresh_data()
+        
+    def on_project_selection_change(self, project):
+        """Handle project selection change and update related dropdowns"""
+        selected_customer = self.customer_optionmenu.get()
+        customer = None if selected_customer == "All Customers" else selected_customer
+        
+        # Filter by both customer (if selected) and project type
+        filtered_data = self.data_manager.data
+        if customer:
+            filtered_data = self.data_manager.filter_by_customer(customer)
+        
+        if project != "All Projects":
+            filtered_data = filtered_data[filtered_data['Projekte'] == project]
+            
+            # Update order years based on the filtered data
+            order_years = set()
+            for order in filtered_data['Auftrag'].tolist():
+                if isinstance(order, str):
+                    matches = re.findall(r'20\d{2}', order)
+                    for match in matches:
+                        order_years.add(match)
+                        
+            self.order_optionmenu.configure(values=["All Years"] + sorted(list(order_years)))
+            self.order_optionmenu.set("All Years")
+        else:
+            # If "All Projects" is selected, reset order years based on customer selection
+            if customer:
+                customer_data = self.data_manager.filter_by_customer(customer)
+                customer_orders = customer_data['Auftrag'].tolist()
+                order_years = set()
+                for order in customer_orders:
+                    if isinstance(order, str):
+                        matches = re.findall(r'20\d{2}', order)
+                        for match in matches:
+                            order_years.add(match)
+                
+                self.order_optionmenu.configure(values=["All Years"] + sorted(list(order_years)))
+            else:
+                # Reset to all order years
+                order_years = self._extract_unique_order_years()
+                self.order_optionmenu.configure(values=["All Years"] + order_years)
+            
+            self.order_optionmenu.set("All Years")
+        
+        # Refresh data display
+        self.refresh_data()
+        
+    def on_order_selection_change(self, order_year):
+        """Handle order year selection change"""
+        # No need to update other dropdowns when order year changes
+        # Just refresh the data display with the new filter
+        self.refresh_data()
+    
+    def set_customer(self, customer):
+        """Sets the selected customer and refreshes the data"""
         self.refresh_data()
 
     def create_tabview(self):
@@ -121,29 +226,48 @@ class App(ctk.CTk):
         self.chart_frames = setup_statistics_tab(self.statistics_tab, self.data_manager)
         self.report_widgets = setup_reports_tab(self.reports_tab)
     
-    def set_customer(self, customer: str) -> None:
-        """Handles the customer selection and updates the data"""
-        self.refresh_data()
-    
-    def update_date_range(self, range_option: str) -> None:
-        """Updates the date range for filtering"""
-        # This function would filter the data by date
-        self.refresh_data()
-    
     def refresh_data(self):
         """Updates all charts and views"""
-        selected_customer = self.optionmenu.get()
+        # Get the selected filter values
+        selected_customer = self.customer_optionmenu.get()
+        selected_project = self.project_optionmenu.get()
+        selected_order_year = self.order_optionmenu.get()
+        
+        # Convert to None if "All" is selected
         customer = None if selected_customer == "All Customers" else selected_customer
+        project_type = None if selected_project == "All Projects" else selected_project
+        
+        # For order year, we need to filter differently since it's part of the Auftrag field
+        # This would require a custom filter in data_manager
         
         # Update the charts with external chart functions
         if self.chart_frames:
+            # Filter data based on selections
+            filtered_data = self.data_manager.data
+            
+            # Apply customer filter
+            if customer:
+                filtered_data = self.data_manager.filter_by_customer(customer)
+                
+            # Apply project type filter
+            if project_type:
+                filtered_data = self.data_manager.filter_by_project_type(project_type)
+                
+            # Apply order year filter if not "All Years"
+            if selected_order_year != "All Years":
+                filtered_data = filtered_data[filtered_data['Auftrag'].str.contains(selected_order_year, na=False)]
+            
+            # Generate reports from filtered data
             customer_data = self.data_manager.get_time_by_customer()
-            daily_data = self.data_manager.get_time_by_day(customer)
-            project_data = self.data_manager.get_time_by_project(customer)
+            daily_data = self.data_manager.get_time_by_day(customer=customer, project_type=project_type)
+            project_data = self.data_manager.get_time_by_project(customer=customer, project_type=project_type)
             
             create_customer_pie_chart(self.chart_frames['client_chart_frame'], customer_data)
             create_daily_line_chart(self.chart_frames['daily_chart_frame'], daily_data)
             create_project_bar_chart(self.chart_frames['project_chart_frame'], project_data)
+            
+            # Update any data displayed in the tabs
+            setup_time_entries_tab(self.time_entries_tab, filtered_data)
     
     def close_app(self, event=None):
         """Closes the application"""

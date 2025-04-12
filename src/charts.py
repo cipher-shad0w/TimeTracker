@@ -50,11 +50,14 @@ def create_daily_line_chart(frame, daily_data):
     if daily_data.empty:
         ctk.CTkLabel(frame, text="No data available").pack(pady=50)
         return
-        
+    
+    # Determine which date column to use (Date or Start Date)
+    date_column = 'Date' if 'Date' in daily_data.columns else 'Start Date'
+    
     # Create the chart
     fig, ax = plt.subplots(figsize=(5, 4), dpi=100)
     ax.plot(
-        daily_data['Date'], 
+        daily_data[date_column], 
         daily_data['Minutes'] / 60,  # Convert to hours
         marker='o',
         linestyle='-',

@@ -508,7 +508,7 @@ class TimeDataManager:
         filtered_data = self.filter_data(customer=customer, project_id=project_id, team_member=team_member)
             
         if filtered_data.empty:
-            return pd.DataFrame(columns=['Date', 'Minutes', 'Hours'])
+            return pd.DataFrame(columns=['Date', 'Start Date', 'Minutes', 'Hours'])
             
         # Nach Datum gruppieren und Zeiten summieren
         daily_time = filtered_data.groupby('Start Date').agg({
@@ -518,6 +518,9 @@ class TimeDataManager:
         
         # Nach Datum sortieren
         daily_time = daily_time.sort_values('Start Date')
+        
+        # Add 'Date' column as a copy of 'Start Date' for chart compatibility
+        daily_time['Date'] = daily_time['Start Date']
         
         return daily_time
     
