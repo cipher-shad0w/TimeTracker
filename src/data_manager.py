@@ -8,6 +8,7 @@ class TimeDataManager:
         self.csv_path = csv_path
         self.data = self._load_data()
         self.customers = self._get_unique_customers()
+        self.projects = self._get_unique_projects()
         
     def _load_data(self):
         try:
@@ -56,6 +57,11 @@ class TimeDataManager:
     def _get_unique_customers(self):
         if self.data is not None and not self.data.empty:
             return self.data['Kunden'].unique().tolist()
+        return []
+        
+    def _get_unique_projects(self):
+        if self.data is not None and not self.data.empty:
+            return self.data['Auftrag'].unique().tolist()
         return []
         
     def filter_by_customer(self, customer_name):

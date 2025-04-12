@@ -1,5 +1,6 @@
 import customtkinter as ctk
 import os
+import datetime  # Import für das aktuelle Datum und Jahr
 # Change relative imports to absolute imports
 from src.data_manager import TimeDataManager
 from src.charts import create_customer_pie_chart, create_daily_line_chart, create_project_bar_chart
@@ -54,55 +55,50 @@ class App(ctk.CTk):
 
     def _setup_left_panel(self):
         """Creates the controls in the left panel"""
-        # Heading
-        settings_label = ctk.CTkLabel(self.left_frame, text="Settings", font=("Arial", 18))
-        settings_label.pack(pady=(20, 20))
-        
         # Customer selection
-        self.customer_label = ctk.CTkLabel(self.left_frame, text="Select customer:")
+        self.customer_label = ctk.CTkLabel(self.left_frame, text="Mandanten:")
         self.customer_label.pack(pady=(10, 5))
         
-        # Add "All Customers" option
-        customers = ["All Customers"] + self.data_manager.customers
+        customers = ["Alle Mandanten"] + self.data_manager.customers
         
         self.optionmenu = ctk.CTkOptionMenu(
             self.left_frame, values=customers, command=self.set_customer
         )
-        self.optionmenu.set("All Customers")
+        self.optionmenu.set("Alle Mandanten")
         self.optionmenu.pack(pady=(0, 20))
         
-        # Date range
-        date_label = ctk.CTkLabel(self.left_frame, text="Time period:")
-        date_label.pack(pady=(10, 5))
+        projects = self.data_manager.projects
         
-        # Create dropdown for time periods
-        date_ranges = ["Last Week", "Last Month", "Last Quarter", "All Time"]
-        self.date_option = ctk.CTkOptionMenu(
-            self.left_frame, values=date_ranges, command=self.update_date_range
+        if not projects:
+            projects = ["Keine Projekte vorhanden"]
+        
+        self.project_label = ctk.CTkLabel(self.left_frame, text="Projekte:")
+        self.project_label.pack(pady=(10, 5))
+        self.project_optionmenu = ctk.CTkOptionMenu(
+            self.left_frame, values=projects, command=self.set_customer
         )
-        self.date_option.set("All Time")
-        self.date_option.pack(pady=(0, 20))
+        self.project_optionmenu.pack(pady=(0, 20))
+        
+        # Jahr selecter
+        current_year = str(datetime.datetime.now().year)  # Aktuelles Jahr
+        years = [current_year, "2022", "2021", "2020"]
+        self.year_label = ctk.CTkLabel(self.left_frame, text="Jahr:")
+        self.year_label.pack(pady=(10, 5))
+        self.year_optionmenu = ctk.CTkOptionMenu(
+            self.left_frame, values=years, command=self.set_year
+        )
+        self.year_optionmenu.set(current_year)  # Setze das aktuelle Jahr
+        self.year_optionmenu.pack(pady=(0, 20))
         
         # Refresh button
         refresh_button = ctk.CTkButton(
             self.left_frame, text="Refresh", command=self.refresh_data
         )
         refresh_button.pack(pady=(30, 10))
-        
-        # Statistics summary
-        self.summary_label = ctk.CTkLabel(self.left_frame, text="Statistics Overview:")
-        self.summary_label.pack(pady=(30, 5))
-        
-        # Frame for summary
-        summary_frame = ctk.CTkFrame(self.left_frame, fg_color="#6B6B6B")
-        summary_frame.pack(pady=10, padx=10, fill="x")
-        
-        # Total time
-        self.total_time_label = ctk.CTkLabel(summary_frame, text="Total time: 0h 0m")
-        self.total_time_label.pack(pady=(10, 5), padx=10, anchor="w")
-        
-        # Update the summary
-        self.update_summary()
+
+    def set_year(self, year: str) -> None:
+        """Handles the year selection and updates the data"""
+        self.refresh_data()
 
     def create_tabview(self):
         # Add tabview to right frame
@@ -145,29 +141,6 @@ class App(ctk.CTk):
             create_customer_pie_chart(self.chart_frames['client_chart_frame'], customer_data)
             create_daily_line_chart(self.chart_frames['daily_chart_frame'], daily_data)
             create_project_bar_chart(self.chart_frames['project_chart_frame'], project_data)
-        
-        # Update the summary
-        self.update_summary()
-    
-    def update_summary(self):
-        """Updates the summary in the left panel"""
-        selected_customer = self.optionmenu.get()
-        customer = None if selected_customer == "All Customers" else selected_customer
-        
-        # Calculate the total time
-        total_minutes = self.data_manager.get_total_time(customer)
-        hours = int(total_minutes // 60)
-        minutes = int(total_minutes % 60)
-        
-        # Update the label
-        self.total_time_label.configure(text=f"Total time: {hours}h {minutes}m")
-        
-        # If a specific customer is selected, update the text accordingly
-        if customer:
-            self.summary_label.configure(text=f"Statistics for {customer}:")
-        else:
-            self.summary_label.configure(text="Statistics Overview:")
-
 
 if __name__ == "__main__":
     app = App()
