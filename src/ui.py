@@ -4,7 +4,7 @@ import datetime
 import re
 from src.data_manager import TimeDataManager
 from src.charts import create_customer_pie_chart, create_daily_line_chart, create_project_bar_chart
-from src.tabs import setup_time_entries_tab, setup_statistics_tab, setup_reports_tab
+from src.tabs import setup_time_entries_tab, setup_statistics_tab, setup_reports_tab, setup_team_tab
 
 
 class App(ctk.CTk):
@@ -263,10 +263,11 @@ class App(ctk.CTk):
         self.tabview = ctk.CTkTabview(self.right_frame, fg_color="#616161")
         self.tabview.pack(padx=20, pady=20, fill="both", expand=True)
 
-        # Create the three tabs
+        # Create the four tabs
         self.time_entries_tab = self.tabview.add("Time Entries")
         self.statistics_tab = self.tabview.add("Statistics")
         self.reports_tab = self.tabview.add("Reports")
+        self.team_tab = self.tabview.add("Team Members")
 
         # Set default tab
         self.tabview.set("Statistics")
@@ -275,6 +276,7 @@ class App(ctk.CTk):
         setup_time_entries_tab(self.time_entries_tab, self.data_manager.data)
         self.chart_frames = setup_statistics_tab(self.statistics_tab, self.data_manager)
         self.report_widgets = setup_reports_tab(self.reports_tab)
+        self.team_frame = setup_team_tab(self.team_tab, self.data_manager)
     
     def refresh_data(self):
         """Updates all charts and views"""
@@ -295,27 +297,27 @@ class App(ctk.CTk):
         elif selected_invoiced == "Not Invoiced":
             invoiced_filter = False
         
+        # Filter data based on selections
+        filtered_data = self.data_manager.data
+        
+        # Apply customer filter
+        if customer:
+            filtered_data = self.data_manager.filter_by_customer(customer)
+            
+        # Apply project type filter
+        if project_type:
+            filtered_data = self.data_manager.filter_by_project_type(project_type)
+            
+        # Apply order year filter if not "All Years"
+        if selected_order_year != "All Years":
+            filtered_data = filtered_data[filtered_data['Auftrag'].str.contains(selected_order_year, na=False)]
+        
+        # Apply invoiced status filter
+        if invoiced_filter is not None:
+            filtered_data = self.data_manager.filter_by_invoiced(invoiced_filter)
+        
         # Update the charts with external chart functions
         if self.chart_frames:
-            # Filter data based on selections
-            filtered_data = self.data_manager.data
-            
-            # Apply customer filter
-            if customer:
-                filtered_data = self.data_manager.filter_by_customer(customer)
-                
-            # Apply project type filter
-            if project_type:
-                filtered_data = self.data_manager.filter_by_project_type(project_type)
-                
-            # Apply order year filter if not "All Years"
-            if selected_order_year != "All Years":
-                filtered_data = filtered_data[filtered_data['Auftrag'].str.contains(selected_order_year, na=False)]
-            
-            # Apply invoiced status filter
-            if invoiced_filter is not None:
-                filtered_data = self.data_manager.filter_by_invoiced(invoiced_filter)
-            
             # Generate reports from filtered data
             customer_data = self.data_manager.get_time_by_customer(invoiced=invoiced_filter)
             daily_data = self.data_manager.get_time_by_day(customer=customer, project_type=project_type)
@@ -324,9 +326,14 @@ class App(ctk.CTk):
             create_customer_pie_chart(self.chart_frames['client_chart_frame'], customer_data)
             create_daily_line_chart(self.chart_frames['daily_chart_frame'], daily_data)
             create_project_bar_chart(self.chart_frames['project_chart_frame'], project_data)
-            
-            # Update any data displayed in the tabs
-            setup_time_entries_tab(self.time_entries_tab, filtered_data)
+        
+        # Update data displayed in the tabs
+        setup_time_entries_tab(self.time_entries_tab, filtered_data)
+        
+        # Update the Team tab with the filtered data
+        for widget in self.team_tab.winfo_children():
+            widget.destroy()
+        self.team_frame = setup_team_tab(self.team_tab, self.data_manager, filtered_data)
     
     def close_app(self, event=None):
         """Closes the application"""
