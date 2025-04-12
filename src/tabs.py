@@ -186,6 +186,11 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
     # Store toggle state for each member
     toggle_states = {}
     
+    # Für jedes Teammitglied eine Sortierungsrichtung für jede Spalte speichern
+    # Dictionary zum Speichern der Sortierrichtung: {member_name: {"column_name": True/False}}
+    # True = aufsteigend, False = absteigend
+    sort_directions = {}
+    
     # For each team member, create a section with their entries
     for i, member in enumerate(team_members):
         # Create a frame for this member
@@ -243,6 +248,15 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
         # Initially set to expanded
         toggle_states[member] = True
         
+        # Initialisierung der Sortierrichtung für jede Spalte
+        sort_directions[member] = {
+            "Date": True,  # Aufsteigend
+            "Customer": True,
+            "Project": True,
+            "Duration": True,
+            "Invoiced": True
+        }
+        
         # Create a scrollable frame for the entries
         entries_scroll_frame = ctk.CTkScrollableFrame(content_container, height=300)
         entries_scroll_frame.pack(fill="x", pady=5)
@@ -255,20 +269,170 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
         headers = ["Date", "Customer", "Project", "Duration", "Invoiced"]
         col_widths = [100, 200, 150, 100, 80]
         
+        # Converts column names to DataFrame column names
+        column_map = {
+            "Date": "End Date",
+            "Customer": "Kunden",
+            "Project": "Projekte",
+            "Duration": "Dauer",
+            "Invoiced": "Abgerechnet"
+        }
+        
+        # Funktion zum Neuladen der Tabelle mit sortierten Daten
+        def reload_table(entries_frame, member_data, sort_column, member_name=member):
+            # Sortierrichtung umkehren
+            sort_directions[member_name][sort_column] = not sort_directions[member_name][sort_column]
+            ascending = sort_directions[member_name][sort_column]
+            
+            # DataFrame-Spalte für die Sortierung bestimmen
+            df_column = column_map.get(sort_column)
+            
+            # Daten sortieren
+            if df_column:
+                sorted_data = member_data.sort_values(df_column, ascending=ascending)
+            else:
+                # Fallback, wenn die Spalte nicht im Mapping gefunden wurde
+                sorted_data = member_data
+            
+            # Alle alten Einträge löschen (ab Zeile 2, um Header und Separator zu behalten)
+            for widget in entries_frame.winfo_children():
+                if widget.grid_info().get('row', 0) >= 2:
+                    widget.destroy()
+            
+            # Neue sortierte Einträge anzeigen
+            for k, row in enumerate(sorted_data.itertuples(), 2):
+                # Date - Fix to show End Date correctly in dd.mm.yyyy format without time
+                date_str = ""
+                
+                # Try different ways to access the End Date
+                try:
+                    # Direct access to End Date column from CSV format
+                    if isinstance(row._6, str):
+                        # If it's already in string format, use it directly
+                        date_str = row._6
+                    elif hasattr(row._6, 'strftime'):
+                        # If it's a datetime object, format it
+                        date_str = row._6.strftime('%d.%m.%Y')
+                except:
+                    # Try to access through specific attribute names
+                    try:
+                        if hasattr(row, 'End_Date'):
+                            if isinstance(row.End_Date, str):
+                                date_str = row.End_Date
+                            elif hasattr(row.End_Date, 'strftime'):
+                                date_str = row.End_Date.strftime('%d.%m.%Y')
+                        elif hasattr(row, 'End Date'):
+                            if isinstance(getattr(row, 'End Date'), str):
+                                date_str = getattr(row, 'End Date')
+                            elif hasattr(getattr(row, 'End Date'), 'strftime'):
+                                date_str = getattr(row, 'End Date').strftime('%d.%m.%Y')
+                    except:
+                        # Last resort: look for any string that looks like a date
+                        for attr in dir(row):
+                            if attr.startswith('_') and attr != '__class__':
+                                val = getattr(row, attr)
+                                if isinstance(val, str) and re.match(r'\d{2}\.\d{2}\.\d{4}', val):
+                                    date_str = val
+                                    break
+                                elif hasattr(val, 'strftime'):
+                                    date_str = val.strftime('%d.%m.%Y')
+                                    break
+                
+                ctk.CTkLabel(
+                    entries_frame,
+                    text=date_str,
+                    width=col_widths[0]
+                ).grid(row=k, column=0, padx=5, pady=2, sticky="w")
+                
+                # Customer
+                ctk.CTkLabel(
+                    entries_frame,
+                    text=row.Kunden,
+                    width=col_widths[1]
+                ).grid(row=k, column=1, padx=5, pady=2, sticky="w")
+                
+                # Project Type
+                ctk.CTkLabel(
+                    entries_frame,
+                    text=row.Projekte,
+                    width=col_widths[2]
+                ).grid(row=k, column=2, padx=5, pady=2, sticky="w")
+                
+                # Duration - Remove seconds
+                duration = row.Dauer if hasattr(row, 'Dauer') else ""
+                if duration and isinstance(duration, str):
+                    # Entfernen des Sekundenzählers (z.B. von "2h 30m 00s" zu "2h 30m")
+                    duration = re.sub(r'\s\d+s$', '', duration)
+                
+                ctk.CTkLabel(
+                    entries_frame,
+                    text=duration,
+                    width=col_widths[3]
+                ).grid(row=k, column=3, padx=5, pady=2, sticky="w")
+                
+                # Invoiced
+                invoiced_text = "Yes" if row.Abgerechnet else "No"
+                invoiced_color = "#4CAF50" if row.Abgerechnet else "#F44336"
+                
+                ctk.CTkLabel(
+                    entries_frame,
+                    text=invoiced_text,
+                    text_color=invoiced_color,
+                    width=col_widths[4],
+                    font=("Arial", 12, "bold")
+                ).grid(row=k, column=4, padx=5, pady=2, sticky="w")
+        
+        # Header-Labels mit Klickfunktionalität erstellen
         for j, header in enumerate(headers):
             header_label = ctk.CTkLabel(
                 entries_frame,
                 text=header,
                 font=("Arial", 12, "bold"),
-                width=col_widths[j]
+                width=col_widths[j],
+                cursor="hand2"  # Hand-Cursor für Klickbarkeit
             )
             header_label.grid(row=0, column=j, padx=5, pady=5, sticky="w")
+            
+            # Sortierrichtungsindikator hinzufügen (Pfeil)
+            sort_indicator = ctk.CTkLabel(
+                entries_frame,
+                text="▲",  # Aufwärtspfeil
+                font=("Arial", 10),
+                width=10
+            )
+            sort_indicator.grid(row=0, column=j, padx=(col_widths[j]-15, 0), pady=5, sticky="e")
+            sort_indicator.grid_remove()  # Zunächst ausblenden
+            
+            # Click-Event für Sortierung
+            header_label.bind("<Button-1>", lambda e, col=header, ef=entries_frame, md=member_data, si=sort_indicator: 
+                            (reload_table(ef, md, col), 
+                             # Update sort indicator for all headers
+                             update_sort_indicators(ef, col)))
+            
+            # Speichere das Indikator-Widget für spätere Updates
+            header_label.sort_indicator = sort_indicator
+            header_label.column_name = header
+        
+        # Funktion, um Sortierrichtungsindikatoren zu aktualisieren
+        def update_sort_indicators(frame, active_column):
+            # Entferne alle vorherigen Indikatoren
+            for widget in frame.winfo_children():
+                if isinstance(widget, ctk.CTkLabel) and hasattr(widget, 'column_name'):
+                    if hasattr(widget, 'sort_indicator'):
+                        widget.sort_indicator.grid_remove()
+            
+            # Zeige Indikator für die aktive Spalte
+            for widget in frame.winfo_children():
+                if isinstance(widget, ctk.CTkLabel) and hasattr(widget, 'column_name'):
+                    if widget.column_name == active_column and hasattr(widget, 'sort_indicator'):
+                        widget.sort_indicator.configure(text="▲" if sort_directions[member][active_column] else "▼")
+                        widget.sort_indicator.grid()
         
         # Add a horizontal separator
         separator = ctk.CTkFrame(entries_frame, height=1, fg_color="gray")
         separator.grid(row=1, column=0, columnspan=len(headers), sticky="ew", padx=5, pady=2)
         
-        # Sort entries by date
+        # Sort entries by date (initial sort)
         member_data_sorted = member_data.sort_values('End Date', ascending=False)
         
         # Show all entries for the member
@@ -293,11 +457,11 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
                             date_str = row.End_Date
                         elif hasattr(row.End_Date, 'strftime'):
                             date_str = row.End_Date.strftime('%d.%m.%Y')
-                    elif hasattr(row, 'End Date'):
-                        if isinstance(getattr(row, 'End Date'), str):
-                            date_str = getattr(row, 'End Date')
-                        elif hasattr(getattr(row, 'End Date'), 'strftime'):
-                            date_str = getattr(row, 'End Date').strftime('%d.%m.%Y')
+                        elif hasattr(row, 'End Date'):
+                            if isinstance(getattr(row, 'End Date'), str):
+                                date_str = getattr(row, 'End Date')
+                            elif hasattr(getattr(row, 'End Date'), 'strftime'):
+                                date_str = getattr(row, 'End Date').strftime('%d.%m.%Y')
                 except:
                     # Last resort: look for any string that looks like a date
                     for attr in dir(row):
@@ -333,6 +497,7 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
             # Duration - Remove seconds
             duration = row.Dauer if hasattr(row, 'Dauer') else ""
             if duration and isinstance(duration, str):
+                # Entfernen des Sekundenzählers (z.B. von "2h 30m 00s" zu "2h 30m")
                 duration = re.sub(r'\s\d+s$', '', duration)
             
             ctk.CTkLabel(
