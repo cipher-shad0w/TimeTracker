@@ -57,9 +57,9 @@ class App(ctk.CTk):
         self.create_tabview()
 
     def _setup_left_panel(self):
-        """Creates the controls in the left panel"""
+        """Creates the controls in the left panel for data filtering"""
  
-        # Kunden (Customers)
+        # Customers
         self.customers_label = ctk.CTkLabel(
             self.left_frame, text="Select Customer:", font=("Arial", 16)
         )
@@ -73,7 +73,7 @@ class App(ctk.CTk):
         self.customer_optionmenu.pack(pady=(0, 20), padx=20)
         self.customer_optionmenu.set("All Customers")
         
-        # Projekte (Projects)
+        # Projects
         self.projects_label = ctk.CTkLabel(
             self.left_frame, text="Select Project:", font=("Arial", 16)
         )
@@ -87,7 +87,7 @@ class App(ctk.CTk):
         self.project_optionmenu.pack(pady=(0, 20), padx=20)
         self.project_optionmenu.set("All Projects")
         
-        # Auftrag (Orders) - Only show years
+        # Orders - Only show years
         self.orders_label = ctk.CTkLabel(
             self.left_frame, text="Select Order Year:", font=("Arial", 16)
         )
@@ -105,11 +105,11 @@ class App(ctk.CTk):
         self.order_optionmenu.pack(pady=(0, 20), padx=20)
         self.order_optionmenu.set("All Years")
         
-        # Füge eine expandierende Lücke ein (Spacer), damit Abgerechnet ganz unten erscheint
+        # Add spacer to push invoiced status to bottom
         spacer = ctk.CTkFrame(self.left_frame, fg_color="transparent")
         spacer.pack(pady=10, fill="both", expand=True)
         
-        # Abgerechnet (Invoiced Status) - ganz am Ende
+        # Invoiced Status - at the bottom
         self.invoiced_label = ctk.CTkLabel(
             self.left_frame, text="Invoiced Status:", font=("Arial", 16)
         )
@@ -259,20 +259,18 @@ class App(ctk.CTk):
         self.refresh_data()
 
     def create_tabview(self):
+        """Create and setup the tab view with the Team Members tab"""
         # Add tabview to right frame
         self.tabview = ctk.CTkTabview(self.right_frame, fg_color="#616161")
         self.tabview.pack(padx=20, pady=20, fill="both", expand=True)
 
-        # Nur den Team-Tab erstellen, alle anderen entfernen
+        # Create only the Team Members tab
         self.team_tab = self.tabview.add("Team Members")
 
-        # Set default tab (nur ein Tab ist verfügbar)
+        # Set default tab (only one tab available)
         self.tabview.set("Team Members")
         
-        # Bind the tab change event nicht mehr nötig, da es nur einen Tab gibt
-        # self.tabview._segmented_button.configure(command=self.on_tab_change)
-        
-        # Nur den Team-Tab mit Inhalt füllen
+        # Fill the Team tab with content
         self.team_frame = setup_team_tab(self.team_tab, self.data_manager)
     
     def on_tab_change(self, tab_name):
@@ -283,7 +281,12 @@ class App(ctk.CTk):
             self.refresh_data(force_update_team=True)
     
     def refresh_data(self, force_update_team=False):
-        """Updates all charts and views"""
+        """
+        Updates all charts and views with the currently selected filters.
+        
+        Args:
+            force_update_team: If True, will force an update of the team tab even if not active
+        """
         # Get the selected filter values
         selected_customer = self.customer_optionmenu.get()
         selected_project = self.project_optionmenu.get()
@@ -301,10 +304,10 @@ class App(ctk.CTk):
         elif selected_invoiced == "Not Invoiced":
             invoiced_filter = False
         
-        # Starte immer mit den ursprünglichen ungefilterten Daten
+        # Start with the original unfiltered data
         filtered_data = self.data_manager.data.copy()
         
-        # Wende die Filter schrittweise an
+        # Apply filters step by step
         if customer:
             filtered_data = filtered_data[filtered_data['Kunden'] == customer]
         
@@ -319,21 +322,21 @@ class App(ctk.CTk):
         if invoiced_filter is not None:
             filtered_data = filtered_data[filtered_data['Abgerechnet'] == invoiced_filter]
         
-        # Vergleiche gefilterte Daten mit vorherigen gefilterten Daten
+        # Compare filtered data with previous filtered data for logging
         if hasattr(self, 'current_filtered_data') and self.current_filtered_data is not None:
             if len(filtered_data) == len(self.current_filtered_data):
-                print(f"Filter angewendet, aber Anzahl der Datensätze unverändert: {len(filtered_data)} Einträge.")
+                print(f"Filters applied but number of records unchanged: {len(filtered_data)} entries.")
             else:
-                print(f"Filter angewendet. Vorher: {len(self.current_filtered_data)} Einträge, nachher: {len(filtered_data)} Einträge.")
+                print(f"Filters applied. Before: {len(self.current_filtered_data)} entries, after: {len(filtered_data)} entries.")
         else:
-            print(f"Initiale Filterung durchgeführt: {len(filtered_data)} Einträge.")
+            print(f"Initial filtering complete: {len(filtered_data)} entries.")
                 
         # Store the filtered data for later use
         self.current_filtered_data = filtered_data
         
         # Update the Team tab with the filtered data
         if self.tabview.get() == "Team Members" or force_update_team:
-            print("Aktualisiere Team-Tab mit gefilterten Daten...")
+            print("Updating Team tab with filtered data...")
             for widget in self.team_tab.winfo_children():
                 widget.destroy()
             self.team_frame = setup_team_tab(self.team_tab, self.data_manager, filtered_data)

@@ -4,6 +4,77 @@ import re
 from src.charts import create_customer_pie_chart, create_daily_line_chart, create_project_bar_chart
 
 
+def format_date_string(row):
+    """
+    Helper function to extract and format date strings consistently across the application.
+    Tries multiple approaches to find and format a date value.
+    
+    Args:
+        row: A pandas DataFrame row (namedtuple)
+        
+    Returns:
+        str: Formatted date string in dd.mm.yyyy format
+    """
+    date_str = ""
+    
+    # Try different ways to access the date
+    try:
+        # Direct access to End Date column from CSV format
+        if isinstance(row._6, str):
+            # If it's already in string format, use it directly
+            date_str = row._6
+        elif hasattr(row._6, 'strftime'):
+            # If it's a datetime object, format it
+            date_str = row._6.strftime('%d.%m.%Y')
+    except:
+        # Try to access through specific attribute names
+        try:
+            if hasattr(row, 'End_Date'):
+                if isinstance(row.End_Date, str):
+                    date_str = row.End_Date
+                elif hasattr(row.End_Date, 'strftime'):
+                    date_str = row.End_Date.strftime('%d.%m.%Y')
+            elif hasattr(row, 'End Date'):
+                if isinstance(getattr(row, 'End Date'), str):
+                    date_str = getattr(row, 'End Date')
+                elif hasattr(getattr(row, 'End Date'), 'strftime'):
+                    date_str = getattr(row, 'End Date').strftime('%d.%m.%Y')
+            elif hasattr(row, 'Start_Date'):
+                if isinstance(row.Start_Date, str):
+                    date_str = row.Start_Date
+                elif hasattr(row.Start_Date, 'strftime'):
+                    date_str = row.Start_Date.strftime('%d.%m.%Y')
+        except:
+            # Last resort: look for any string that looks like a date
+            for attr in dir(row):
+                if attr.startswith('_') and attr != '__class__':
+                    val = getattr(row, attr)
+                    if isinstance(val, str) and re.match(r'\d{2}\.\d{2}\.\d{4}', val):
+                        date_str = val
+                        break
+                    elif hasattr(val, 'strftime'):
+                        date_str = val.strftime('%d.%m.%Y')
+                        break
+    
+    return date_str
+
+
+def format_duration(duration):
+    """
+    Format duration string by removing seconds.
+    
+    Args:
+        duration: Duration string in format like "2h 30m 00s"
+        
+    Returns:
+        str: Formatted duration string like "2h 30m"
+    """
+    if duration and isinstance(duration, str):
+        # Remove seconds counter (e.g. from "2h 30m 00s" to "2h 30m")
+        return re.sub(r'\s\d+s$', '', duration)
+    return duration
+
+
 def setup_time_entries_tab(tab, data_frame):
     """Shows the time entries as a table"""
     # Frame for the table
@@ -32,7 +103,7 @@ def setup_time_entries_tab(tab, data_frame):
                   width=col_widths[1]).grid(row=idx, column=1, padx=5, pady=2, sticky="w")
         
         # Date (now from the new Date column)
-        date_str = row.Start_Date.strftime('%d.%m.%Y') if hasattr(row, 'Start_Date') else ""
+        date_str = format_date_string(row)
         ctk.CTkLabel(table_frame, text=date_str,
                   width=col_widths[2]).grid(row=idx, column=2, padx=5, pady=2, sticky="w")
         
@@ -186,9 +257,9 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
     # Store toggle state for each member
     toggle_states = {}
     
-    # Für jedes Teammitglied eine Sortierungsrichtung für jede Spalte speichern
-    # Dictionary zum Speichern der Sortierrichtung: {member_name: {"column_name": True/False}}
-    # True = aufsteigend, False = absteigend
+    # Store sort direction for each column of each team member
+    # Dictionary structure: {member_name: {"column_name": True/False}}
+    # True = ascending, False = descending
     sort_directions = {}
     
     # For each team member, create a section with their entries
@@ -248,9 +319,9 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
         # Initially set to expanded
         toggle_states[member] = True
         
-        # Initialisierung der Sortierrichtung für jede Spalte
+        # Initialize sort direction for each column
         sort_directions[member] = {
-            "Date": True,  # Aufsteigend
+            "Date": True,  # Ascending
             "Customer": True,
             "Project": True,
             "Duration": True,
@@ -278,65 +349,31 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
             "Invoiced": "Abgerechnet"
         }
         
-        # Funktion zum Neuladen der Tabelle mit sortierten Daten
+        # Function to reload the table with sorted data
         def reload_table(entries_frame, member_data, sort_column, member_name=member):
-            # Sortierrichtung umkehren
+            # Reverse sort direction
             sort_directions[member_name][sort_column] = not sort_directions[member_name][sort_column]
             ascending = sort_directions[member_name][sort_column]
             
-            # DataFrame-Spalte für die Sortierung bestimmen
+            # Determine DataFrame column for sorting
             df_column = column_map.get(sort_column)
             
-            # Daten sortieren
+            # Sort the data
             if df_column:
                 sorted_data = member_data.sort_values(df_column, ascending=ascending)
             else:
-                # Fallback, wenn die Spalte nicht im Mapping gefunden wurde
+                # Fallback if column not found in mapping
                 sorted_data = member_data
             
-            # Alle alten Einträge löschen (ab Zeile 2, um Header und Separator zu behalten)
+            # Delete all old entries (from row 2 onwards, to keep header and separator)
             for widget in entries_frame.winfo_children():
                 if widget.grid_info().get('row', 0) >= 2:
                     widget.destroy()
             
-            # Neue sortierte Einträge anzeigen
+            # Display new sorted entries
             for k, row in enumerate(sorted_data.itertuples(), 2):
                 # Date - Fix to show End Date correctly in dd.mm.yyyy format without time
-                date_str = ""
-                
-                # Try different ways to access the End Date
-                try:
-                    # Direct access to End Date column from CSV format
-                    if isinstance(row._6, str):
-                        # If it's already in string format, use it directly
-                        date_str = row._6
-                    elif hasattr(row._6, 'strftime'):
-                        # If it's a datetime object, format it
-                        date_str = row._6.strftime('%d.%m.%Y')
-                except:
-                    # Try to access through specific attribute names
-                    try:
-                        if hasattr(row, 'End_Date'):
-                            if isinstance(row.End_Date, str):
-                                date_str = row.End_Date
-                            elif hasattr(row.End_Date, 'strftime'):
-                                date_str = row.End_Date.strftime('%d.%m.%Y')
-                        elif hasattr(row, 'End Date'):
-                            if isinstance(getattr(row, 'End Date'), str):
-                                date_str = getattr(row, 'End Date')
-                            elif hasattr(getattr(row, 'End Date'), 'strftime'):
-                                date_str = getattr(row, 'End Date').strftime('%d.%m.%Y')
-                    except:
-                        # Last resort: look for any string that looks like a date
-                        for attr in dir(row):
-                            if attr.startswith('_') and attr != '__class__':
-                                val = getattr(row, attr)
-                                if isinstance(val, str) and re.match(r'\d{2}\.\d{2}\.\d{4}', val):
-                                    date_str = val
-                                    break
-                                elif hasattr(val, 'strftime'):
-                                    date_str = val.strftime('%d.%m.%Y')
-                                    break
+                date_str = format_date_string(row)
                 
                 ctk.CTkLabel(
                     entries_frame,
@@ -359,10 +396,7 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
                 ).grid(row=k, column=2, padx=5, pady=2, sticky="w")
                 
                 # Duration - Remove seconds
-                duration = row.Dauer if hasattr(row, 'Dauer') else ""
-                if duration and isinstance(duration, str):
-                    # Entfernen des Sekundenzählers (z.B. von "2h 30m 00s" zu "2h 30m")
-                    duration = re.sub(r'\s\d+s$', '', duration)
+                duration = format_duration(row.Dauer if hasattr(row, 'Dauer') else "")
                 
                 ctk.CTkLabel(
                     entries_frame,
@@ -382,46 +416,46 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
                     font=("Arial", 12, "bold")
                 ).grid(row=k, column=4, padx=5, pady=2, sticky="w")
         
-        # Header-Labels mit Klickfunktionalität erstellen
+        # Create header labels with click functionality
         for j, header in enumerate(headers):
             header_label = ctk.CTkLabel(
                 entries_frame,
                 text=header,
                 font=("Arial", 12, "bold"),
                 width=col_widths[j],
-                cursor="hand2"  # Hand-Cursor für Klickbarkeit
+                cursor="hand2"  # Hand cursor for clickability
             )
             header_label.grid(row=0, column=j, padx=5, pady=5, sticky="w")
             
-            # Sortierrichtungsindikator hinzufügen (Pfeil)
+            # Add sort direction indicator (arrow)
             sort_indicator = ctk.CTkLabel(
                 entries_frame,
-                text="▲",  # Aufwärtspfeil
+                text="▲",  # Up arrow
                 font=("Arial", 10),
                 width=10
             )
             sort_indicator.grid(row=0, column=j, padx=(col_widths[j]-15, 0), pady=5, sticky="e")
-            sort_indicator.grid_remove()  # Zunächst ausblenden
+            sort_indicator.grid_remove()  # Hide initially
             
-            # Click-Event für Sortierung
+            # Click event for sorting
             header_label.bind("<Button-1>", lambda e, col=header, ef=entries_frame, md=member_data, si=sort_indicator: 
                             (reload_table(ef, md, col), 
                              # Update sort indicator for all headers
                              update_sort_indicators(ef, col)))
             
-            # Speichere das Indikator-Widget für spätere Updates
+            # Save the indicator widget for later updates
             header_label.sort_indicator = sort_indicator
             header_label.column_name = header
         
-        # Funktion, um Sortierrichtungsindikatoren zu aktualisieren
+        # Function to update sort direction indicators
         def update_sort_indicators(frame, active_column):
-            # Entferne alle vorherigen Indikatoren
+            # Remove all previous indicators
             for widget in frame.winfo_children():
                 if isinstance(widget, ctk.CTkLabel) and hasattr(widget, 'column_name'):
                     if hasattr(widget, 'sort_indicator'):
                         widget.sort_indicator.grid_remove()
             
-            # Zeige Indikator für die aktive Spalte
+            # Show indicator for active column
             for widget in frame.winfo_children():
                 if isinstance(widget, ctk.CTkLabel) and hasattr(widget, 'column_name'):
                     if widget.column_name == active_column and hasattr(widget, 'sort_indicator'):
@@ -438,41 +472,7 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
         # Show all entries for the member
         for k, row in enumerate(member_data_sorted.itertuples(), 2):
             # Date - Fix to show End Date correctly in dd.mm.yyyy format without time
-            date_str = ""
-            
-            # Try different ways to access the End Date
-            try:
-                # Direct access to End Date column from CSV format
-                if isinstance(row._6, str):
-                    # If it's already in string format, use it directly
-                    date_str = row._6
-                elif hasattr(row._6, 'strftime'):
-                    # If it's a datetime object, format it
-                    date_str = row._6.strftime('%d.%m.%Y')
-            except:
-                # Try to access through specific attribute names
-                try:
-                    if hasattr(row, 'End_Date'):
-                        if isinstance(row.End_Date, str):
-                            date_str = row.End_Date
-                        elif hasattr(row.End_Date, 'strftime'):
-                            date_str = row.End_Date.strftime('%d.%m.%Y')
-                        elif hasattr(row, 'End Date'):
-                            if isinstance(getattr(row, 'End Date'), str):
-                                date_str = getattr(row, 'End Date')
-                            elif hasattr(getattr(row, 'End Date'), 'strftime'):
-                                date_str = getattr(row, 'End Date').strftime('%d.%m.%Y')
-                except:
-                    # Last resort: look for any string that looks like a date
-                    for attr in dir(row):
-                        if attr.startswith('_') and attr != '__class__':
-                            val = getattr(row, attr)
-                            if isinstance(val, str) and re.match(r'\d{2}\.\d{2}\.\d{4}', val):
-                                date_str = val
-                                break
-                            elif hasattr(val, 'strftime'):
-                                date_str = val.strftime('%d.%m.%Y')
-                                break
+            date_str = format_date_string(row)
             
             ctk.CTkLabel(
                 entries_frame,
@@ -495,10 +495,7 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
             ).grid(row=k, column=2, padx=5, pady=2, sticky="w")
             
             # Duration - Remove seconds
-            duration = row.Dauer if hasattr(row, 'Dauer') else ""
-            if duration and isinstance(duration, str):
-                # Entfernen des Sekundenzählers (z.B. von "2h 30m 00s" zu "2h 30m")
-                duration = re.sub(r'\s\d+s$', '', duration)
+            duration = format_duration(row.Dauer if hasattr(row, 'Dauer') else "")
             
             ctk.CTkLabel(
                 entries_frame,
