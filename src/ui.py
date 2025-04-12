@@ -1,9 +1,8 @@
 import customtkinter as ctk
 import os
-import datetime
 import re
 from src.data_manager import TimeDataManager
-from src.tabs import setup_time_entries_tab, setup_statistics_tab, setup_reports_tab, setup_team_tab, setup_fibu_tab
+from src.tabs import setup_team_tab
 
 
 class App(ctk.CTk):
@@ -272,10 +271,9 @@ class App(ctk.CTk):
         
         # Fill the tabs with content
         self.team_frame = setup_team_tab(self.team_tab, self.data_manager)
-        self.fibu_frame = setup_fibu_tab(self.fibu_tab)
         
         # Add tab change event
-        self.tabview._segmented_button.configure(command=self.on_tab_change)
+        # self.tabview._segmented_button.configure(command=self.on_tab_change)
     
     def on_tab_change(self, tab_name):
         """Handle tab change event"""
