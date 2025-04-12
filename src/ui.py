@@ -22,6 +22,9 @@ class App(ctk.CTk):
         # Initialize UI components
         self.chart_frames = None
         self.create_widgets()
+        
+        # Bind the Escape key to close the app
+        self.bind("<Escape>", self.close_app)
 
     def create_widgets(self) -> None:
         # Create the main frames with different gray shades
@@ -141,6 +144,11 @@ class App(ctk.CTk):
             create_customer_pie_chart(self.chart_frames['client_chart_frame'], customer_data)
             create_daily_line_chart(self.chart_frames['daily_chart_frame'], daily_data)
             create_project_bar_chart(self.chart_frames['project_chart_frame'], project_data)
+    
+    def close_app(self, event=None):
+        """Schließt die Anwendung, wenn ESC gedrückt wird"""
+        self.quit()
+        self.destroy()
 
 if __name__ == "__main__":
     app = App()
