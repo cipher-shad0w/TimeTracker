@@ -16,7 +16,7 @@ class App(ctk.CTk):
         
         # Initialize the TimeDataManager with the CSV data
         csv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 
-                               "data", "example_csv_time.csv")
+                               "data", "time.csv")
         self.data_manager = TimeDataManager(csv_path)
         
         # Initialize UI components
@@ -83,14 +83,14 @@ class App(ctk.CTk):
         self.project_optionmenu.pack(pady=(0, 20))
         
         # Jahr selecter
-        current_year = str(datetime.datetime.now().year)  # Aktuelles Jahr
+        current_year = str(datetime.datetime.now().year)
         years = [current_year, "2022", "2021", "2020"]
         self.year_label = ctk.CTkLabel(self.left_frame, text="Jahr:")
         self.year_label.pack(pady=(10, 5))
         self.year_optionmenu = ctk.CTkOptionMenu(
             self.left_frame, values=years, command=self.set_year
         )
-        self.year_optionmenu.set(current_year)  # Setze das aktuelle Jahr
+        self.year_optionmenu.set(current_year)
         self.year_optionmenu.pack(pady=(0, 20))
         
         # Refresh button
@@ -146,7 +146,7 @@ class App(ctk.CTk):
             create_project_bar_chart(self.chart_frames['project_chart_frame'], project_data)
     
     def close_app(self, event=None):
-        """Schließt die Anwendung, wenn ESC gedrückt wird"""
+        """Closes the application"""
         self.quit()
         self.destroy()
 
