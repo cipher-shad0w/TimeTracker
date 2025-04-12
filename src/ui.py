@@ -105,11 +105,15 @@ class App(ctk.CTk):
         self.order_optionmenu.pack(pady=(0, 20), padx=20)
         self.order_optionmenu.set("All Years")
         
-        # Abgerechnet (Invoiced Status) - at the bottom
+        # Füge eine expandierende Lücke ein (Spacer), damit Abgerechnet ganz unten erscheint
+        spacer = ctk.CTkFrame(self.left_frame, fg_color="transparent")
+        spacer.pack(pady=10, fill="both", expand=True)
+        
+        # Abgerechnet (Invoiced Status) - ganz am Ende
         self.invoiced_label = ctk.CTkLabel(
             self.left_frame, text="Invoiced Status:", font=("Arial", 16)
         )
-        self.invoiced_label.pack(pady=(20, 10))
+        self.invoiced_label.pack(pady=(10, 10))
         
         # Create a frame for the radio buttons
         self.invoiced_frame = ctk.CTkFrame(self.left_frame, fg_color="transparent")
@@ -121,7 +125,7 @@ class App(ctk.CTk):
         # Create radio buttons for invoiced status
         self.radio_all = ctk.CTkRadioButton(
             self.invoiced_frame, 
-            text="Alles", 
+            text="All", 
             variable=self.invoiced_var, 
             value="All",
             command=self.on_invoiced_selection_change
@@ -130,7 +134,7 @@ class App(ctk.CTk):
         
         self.radio_invoiced = ctk.CTkRadioButton(
             self.invoiced_frame, 
-            text="Abgenrechnet", 
+            text="Invoiced", 
             variable=self.invoiced_var, 
             value="Invoiced",
             command=self.on_invoiced_selection_change
@@ -139,7 +143,7 @@ class App(ctk.CTk):
         
         self.radio_not_invoiced = ctk.CTkRadioButton(
             self.invoiced_frame, 
-            text="Nicht Abgerechnet", 
+            text="Not Invoiced", 
             variable=self.invoiced_var, 
             value="Not Invoiced",
             command=self.on_invoiced_selection_change
