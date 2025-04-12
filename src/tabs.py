@@ -1,4 +1,5 @@
 import customtkinter as ctk
+import re
 # Change relative import to absolute import
 from src.charts import create_customer_pie_chart, create_daily_line_chart, create_project_bar_chart
 
@@ -178,9 +179,9 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
         no_data_label.pack(pady=50)
         return
     
-    # Create scrollable frame for team members
-    team_scroll_frame = ctk.CTkScrollableFrame(team_container)
-    team_scroll_frame.pack(fill="both", expand=True, padx=10, pady=10)
+    # Create frame for team members (not scrollable)
+    team_frame = ctk.CTkFrame(team_container)
+    team_frame.pack(fill="both", expand=True, padx=10, pady=10)
     
     # Store toggle state for each member
     toggle_states = {}
@@ -188,7 +189,7 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
     # For each team member, create a section with their entries
     for i, member in enumerate(team_members):
         # Create a frame for this member
-        member_frame = ctk.CTkFrame(team_scroll_frame)
+        member_frame = ctk.CTkFrame(team_frame)
         member_frame.pack(fill="x", expand=True, padx=5, pady=10, anchor="n")
         
         # Get entries for this member
@@ -242,13 +243,17 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
         # Initially set to expanded
         toggle_states[member] = True
         
-        # Create a table for the entries
-        entries_frame = ctk.CTkFrame(content_container)
+        # Create a scrollable frame for the entries
+        entries_scroll_frame = ctk.CTkScrollableFrame(content_container, height=300)
+        entries_scroll_frame.pack(fill="x", pady=5)
+        
+        # Create a table for the entries within the scrollable frame
+        entries_frame = ctk.CTkFrame(entries_scroll_frame)
         entries_frame.pack(fill="x", pady=5)
         
-        # Table headers
-        headers = ["Date", "Customer", "Project", "Order", "Duration", "Invoiced"]
-        col_widths = [100, 200, 150, 100, 100, 80]
+        # Table headers - removed "Order" column
+        headers = ["Date", "Customer", "Project", "Duration", "Invoiced"]
+        col_widths = [100, 200, 150, 100, 80]
         
         for j, header in enumerate(headers):
             header_label = ctk.CTkLabel(
@@ -264,15 +269,46 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
         separator.grid(row=1, column=0, columnspan=len(headers), sticky="ew", padx=5, pady=2)
         
         # Sort entries by date
-        member_data_sorted = member_data.sort_values('Start Date', ascending=False)
+        member_data_sorted = member_data.sort_values('End Date', ascending=False)
         
-        # Show entries (limited to 10 per member to avoid UI overload)
-        max_entries = min(10, len(member_data_sorted))
-        for k, row in enumerate(member_data_sorted.head(max_entries).itertuples(), 2):
-            # Date
-            date_str = row.Start_Date.strftime('%d.%m.%Y') if hasattr(row, 'Start_Date') else ""
-            if date_str == "":
-                date_str = row._5.strftime('%d.%m.%Y') if hasattr(row, '_5') else "" # Using the index if column name is different
+        # Show all entries for the member
+        for k, row in enumerate(member_data_sorted.itertuples(), 2):
+            # Date - Fix to show End Date correctly in dd.mm.yyyy format without time
+            date_str = ""
+            
+            # Try different ways to access the End Date
+            try:
+                # Direct access to End Date column from CSV format
+                if isinstance(row._6, str):
+                    # If it's already in string format, use it directly
+                    date_str = row._6
+                elif hasattr(row._6, 'strftime'):
+                    # If it's a datetime object, format it
+                    date_str = row._6.strftime('%d.%m.%Y')
+            except:
+                # Try to access through specific attribute names
+                try:
+                    if hasattr(row, 'End_Date'):
+                        if isinstance(row.End_Date, str):
+                            date_str = row.End_Date
+                        elif hasattr(row.End_Date, 'strftime'):
+                            date_str = row.End_Date.strftime('%d.%m.%Y')
+                    elif hasattr(row, 'End Date'):
+                        if isinstance(getattr(row, 'End Date'), str):
+                            date_str = getattr(row, 'End Date')
+                        elif hasattr(getattr(row, 'End Date'), 'strftime'):
+                            date_str = getattr(row, 'End Date').strftime('%d.%m.%Y')
+                except:
+                    # Last resort: look for any string that looks like a date
+                    for attr in dir(row):
+                        if attr.startswith('_') and attr != '__class__':
+                            val = getattr(row, attr)
+                            if isinstance(val, str) and re.match(r'\d{2}\.\d{2}\.\d{4}', val):
+                                date_str = val
+                                break
+                            elif hasattr(val, 'strftime'):
+                                date_str = val.strftime('%d.%m.%Y')
+                                break
             
             ctk.CTkLabel(
                 entries_frame,
@@ -294,19 +330,16 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
                 width=col_widths[2]
             ).grid(row=k, column=2, padx=5, pady=2, sticky="w")
             
-            # Order
+            # Duration - Remove seconds
+            duration = row.Dauer if hasattr(row, 'Dauer') else ""
+            if duration and isinstance(duration, str):
+                duration = re.sub(r'\s\d+s$', '', duration)
+            
             ctk.CTkLabel(
                 entries_frame,
-                text=row.Auftrag,
+                text=duration,
                 width=col_widths[3]
             ).grid(row=k, column=3, padx=5, pady=2, sticky="w")
-            
-            # Duration
-            ctk.CTkLabel(
-                entries_frame,
-                text=row.Dauer,
-                width=col_widths[4]
-            ).grid(row=k, column=4, padx=5, pady=2, sticky="w")
             
             # Invoiced
             invoiced_text = "Yes" if row.Abgerechnet else "No"
@@ -316,17 +349,8 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
                 entries_frame,
                 text=invoiced_text,
                 text_color=invoiced_color,
-                width=col_widths[5],
+                width=col_widths[4],
                 font=("Arial", 12, "bold")
-            ).grid(row=k, column=5, padx=5, pady=2, sticky="w")
-        
-        # If there are more entries than shown
-        if len(member_data_sorted) > max_entries:
-            more_label = ctk.CTkLabel(
-                entries_frame,
-                text=f"... and {len(member_data_sorted) - max_entries} more entries",
-                font=("Arial", 10, "italic")
-            )
-            more_label.grid(row=max_entries+2, column=0, columnspan=len(headers), padx=5, pady=(5, 10), sticky="w")
+            ).grid(row=k, column=4, padx=5, pady=2, sticky="w")
     
-    return team_scroll_frame
+    return team_container
