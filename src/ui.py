@@ -105,6 +105,47 @@ class App(ctk.CTk):
         self.order_optionmenu.pack(pady=(0, 20), padx=20)
         self.order_optionmenu.set("All Years")
         
+        # Abgerechnet (Invoiced Status) - at the bottom
+        self.invoiced_label = ctk.CTkLabel(
+            self.left_frame, text="Invoiced Status:", font=("Arial", 16)
+        )
+        self.invoiced_label.pack(pady=(20, 10))
+        
+        # Create a frame for the radio buttons
+        self.invoiced_frame = ctk.CTkFrame(self.left_frame, fg_color="transparent")
+        self.invoiced_frame.pack(pady=(0, 20), padx=20, fill="x")
+        
+        # Create a variable to store the invoiced status selection
+        self.invoiced_var = ctk.StringVar(value="All")
+        
+        # Create radio buttons for invoiced status
+        self.radio_all = ctk.CTkRadioButton(
+            self.invoiced_frame, 
+            text="Alles", 
+            variable=self.invoiced_var, 
+            value="All",
+            command=self.on_invoiced_selection_change
+        )
+        self.radio_all.pack(anchor="w", pady=5)
+        
+        self.radio_invoiced = ctk.CTkRadioButton(
+            self.invoiced_frame, 
+            text="Abgenrechnet", 
+            variable=self.invoiced_var, 
+            value="Invoiced",
+            command=self.on_invoiced_selection_change
+        )
+        self.radio_invoiced.pack(anchor="w", pady=5)
+        
+        self.radio_not_invoiced = ctk.CTkRadioButton(
+            self.invoiced_frame, 
+            text="Nicht Abgerechnet", 
+            variable=self.invoiced_var, 
+            value="Not Invoiced",
+            command=self.on_invoiced_selection_change
+        )
+        self.radio_not_invoiced.pack(anchor="w", pady=5)
+        
     def _extract_unique_order_years(self):
         """Extract unique years from the Auftrag field"""
         years = set()
@@ -204,6 +245,11 @@ class App(ctk.CTk):
         # Just refresh the data display with the new filter
         self.refresh_data()
     
+    def on_invoiced_selection_change(self):
+        """Handle invoice status selection change"""
+        # Refresh the data display with the new filter
+        self.refresh_data()
+    
     def set_customer(self, customer):
         """Sets the selected customer and refreshes the data"""
         self.refresh_data()
@@ -232,13 +278,18 @@ class App(ctk.CTk):
         selected_customer = self.customer_optionmenu.get()
         selected_project = self.project_optionmenu.get()
         selected_order_year = self.order_optionmenu.get()
+        selected_invoiced = self.invoiced_var.get()
         
         # Convert to None if "All" is selected
         customer = None if selected_customer == "All Customers" else selected_customer
         project_type = None if selected_project == "All Projects" else selected_project
         
-        # For order year, we need to filter differently since it's part of the Auftrag field
-        # This would require a custom filter in data_manager
+        # Initialize invoiced filter as None (all entries)
+        invoiced_filter = None
+        if selected_invoiced == "Invoiced":
+            invoiced_filter = True
+        elif selected_invoiced == "Not Invoiced":
+            invoiced_filter = False
         
         # Update the charts with external chart functions
         if self.chart_frames:
@@ -257,10 +308,14 @@ class App(ctk.CTk):
             if selected_order_year != "All Years":
                 filtered_data = filtered_data[filtered_data['Auftrag'].str.contains(selected_order_year, na=False)]
             
+            # Apply invoiced status filter
+            if invoiced_filter is not None:
+                filtered_data = self.data_manager.filter_by_invoiced(invoiced_filter)
+            
             # Generate reports from filtered data
-            customer_data = self.data_manager.get_time_by_customer()
+            customer_data = self.data_manager.get_time_by_customer(invoiced=invoiced_filter)
             daily_data = self.data_manager.get_time_by_day(customer=customer, project_type=project_type)
-            project_data = self.data_manager.get_time_by_project(customer=customer, project_type=project_type)
+            project_data = self.data_manager.get_time_by_project(customer=customer, project_type=project_type, invoiced=invoiced_filter)
             
             create_customer_pie_chart(self.chart_frames['client_chart_frame'], customer_data)
             create_daily_line_chart(self.chart_frames['daily_chart_frame'], daily_data)
