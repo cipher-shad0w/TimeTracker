@@ -30,8 +30,8 @@ def setup_time_entries_tab(tab, data_frame):
                   width=col_widths[1]).grid(row=idx, column=1, padx=5, pady=2, sticky="w")
         
         # Datum
-        datum = row._4.strftime('%d.%m.%Y')
-        ctk.CTkLabel(table_frame, text=datum,
+        datum_str = row.Datum.strftime('%d.%m.%Y') if hasattr(row, 'Datum') else ""
+        ctk.CTkLabel(table_frame, text=datum_str,
                   width=col_widths[2]).grid(row=idx, column=2, padx=5, pady=2, sticky="w")
         
         # Dauer

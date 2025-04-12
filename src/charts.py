@@ -54,7 +54,7 @@ def create_daily_line_chart(frame, daily_data):
     # Erstelle das Diagramm
     fig, ax = plt.subplots(figsize=(5, 4), dpi=100)
     ax.plot(
-        daily_data['Start Date'], 
+        daily_data['Datum'], 
         daily_data['Minuten'] / 60,  # Konvertiere zu Stunden
         marker='o',
         linestyle='-',

@@ -16,14 +16,30 @@ class TimeDataManager:
             # Konvertiere Zeiten zu Minuten für einfachere Berechnungen
             df['Minuten'] = df['Dauer'].apply(self._convert_time_to_minutes)
             
-            # Konvertiere Datum zu datetime
-            df['Start Date'] = pd.to_datetime(df['Start Date'], format='%d.%m.%Y')
-            df['End Date'] = pd.to_datetime(df['End Date'], format='%d.%m.%Y')
+            # Versuche Datum aus der Notiz zu extrahieren, ansonsten verwende das aktuelle Datum
+            df['Datum'] = df['Notiz'].apply(self._extract_date_from_note)
             
             return df
         except Exception as e:
             print(f"Fehler beim Laden der CSV-Datei: {e}")
             return pd.DataFrame()
+    
+    def _extract_date_from_note(self, note):
+        """Extrahiert ein Datum aus der Notiz wenn vorhanden"""
+        if not isinstance(note, str):
+            return datetime.now()
+        
+        # Suche nach Datumsmuster in der Notiz (Format: DD.MM.YYYY)
+        date_pattern = r'(\d{2}\.\d{2}\.\d{4})'
+        match = re.search(date_pattern, note)
+        
+        if match:
+            date_str = match.group(1)
+            try:
+                return pd.to_datetime(date_str, format='%d.%m.%Y')
+            except:
+                return datetime.now()
+        return datetime.now()
     
     def _convert_time_to_minutes(self, time_str):
         # Extrahiere Stunden, Minuten und Sekunden aus dem Format "1h 32m 00s"
@@ -55,7 +71,7 @@ class TimeDataManager:
             return pd.DataFrame()
             
         # Gruppiere nach Datum und summiere die Minuten
-        daily_time = filtered_data.groupby('Start Date')['Minuten'].sum().reset_index()
+        daily_time = filtered_data.groupby('Datum')['Minuten'].sum().reset_index()
         return daily_time
     
     def get_time_by_customer(self):
@@ -85,12 +101,12 @@ class TimeDataManager:
         
         if range_option == "Letzte Woche":
             start_date = today - timedelta(days=7)
-            return self.data[self.data['Start Date'] >= start_date]
+            return self.data[self.data['Datum'] >= start_date]
         elif range_option == "Letzter Monat":
             start_date = today - timedelta(days=30)
-            return self.data[self.data['Start Date'] >= start_date]
+            return self.data[self.data['Datum'] >= start_date]
         elif range_option == "Letztes Quartal":
             start_date = today - timedelta(days=90)
-            return self.data[self.data['Start Date'] >= start_date]
+            return self.data[self.data['Datum'] >= start_date]
         else:  # "Alle Zeiten"
             return self.data
