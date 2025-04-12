@@ -263,22 +263,26 @@ class App(ctk.CTk):
         self.tabview = ctk.CTkTabview(self.right_frame, fg_color="#616161")
         self.tabview.pack(padx=20, pady=20, fill="both", expand=True)
 
-        # Create the four tabs
-        self.time_entries_tab = self.tabview.add("Time Entries")
-        self.statistics_tab = self.tabview.add("Statistics")
-        self.reports_tab = self.tabview.add("Reports")
+        # Nur den Team-Tab erstellen, alle anderen entfernen
         self.team_tab = self.tabview.add("Team Members")
 
-        # Set default tab
-        self.tabview.set("Statistics")
+        # Set default tab (nur ein Tab ist verfügbar)
+        self.tabview.set("Team Members")
         
-        # Fill the tabs with content - now from external functions
-        setup_time_entries_tab(self.time_entries_tab, self.data_manager.data)
-        self.chart_frames = setup_statistics_tab(self.statistics_tab, self.data_manager)
-        self.report_widgets = setup_reports_tab(self.reports_tab)
+        # Bind the tab change event nicht mehr nötig, da es nur einen Tab gibt
+        # self.tabview._segmented_button.configure(command=self.on_tab_change)
+        
+        # Nur den Team-Tab mit Inhalt füllen
         self.team_frame = setup_team_tab(self.team_tab, self.data_manager)
     
-    def refresh_data(self):
+    def on_tab_change(self, tab_name):
+        """Handle tab change event"""
+        # If changing to the Team Members tab, make sure to update with filtered data
+        if tab_name == "Team Members":
+            # Get current filter settings and apply them
+            self.refresh_data(force_update_team=True)
+    
+    def refresh_data(self, force_update_team=False):
         """Updates all charts and views"""
         # Get the selected filter values
         selected_customer = self.customer_optionmenu.get()
@@ -297,16 +301,15 @@ class App(ctk.CTk):
         elif selected_invoiced == "Not Invoiced":
             invoiced_filter = False
         
-        # Filter data based on selections
-        filtered_data = self.data_manager.data
+        # Starte immer mit den ursprünglichen ungefilterten Daten
+        filtered_data = self.data_manager.data.copy()
         
-        # Apply customer filter
+        # Wende die Filter schrittweise an
         if customer:
-            filtered_data = self.data_manager.filter_by_customer(customer)
-            
-        # Apply project type filter
+            filtered_data = filtered_data[filtered_data['Kunden'] == customer]
+        
         if project_type:
-            filtered_data = self.data_manager.filter_by_project_type(project_type)
+            filtered_data = filtered_data[filtered_data['Projekte'] == project_type]
             
         # Apply order year filter if not "All Years"
         if selected_order_year != "All Years":
@@ -314,26 +317,26 @@ class App(ctk.CTk):
         
         # Apply invoiced status filter
         if invoiced_filter is not None:
-            filtered_data = self.data_manager.filter_by_invoiced(invoiced_filter)
+            filtered_data = filtered_data[filtered_data['Abgerechnet'] == invoiced_filter]
         
-        # Update the charts with external chart functions
-        if self.chart_frames:
-            # Generate reports from filtered data
-            customer_data = self.data_manager.get_time_by_customer(invoiced=invoiced_filter)
-            daily_data = self.data_manager.get_time_by_day(customer=customer, project_type=project_type)
-            project_data = self.data_manager.get_time_by_project(customer=customer, project_type=project_type, invoiced=invoiced_filter)
-            
-            create_customer_pie_chart(self.chart_frames['client_chart_frame'], customer_data)
-            create_daily_line_chart(self.chart_frames['daily_chart_frame'], daily_data)
-            create_project_bar_chart(self.chart_frames['project_chart_frame'], project_data)
-        
-        # Update data displayed in the tabs
-        setup_time_entries_tab(self.time_entries_tab, filtered_data)
+        # Vergleiche gefilterte Daten mit vorherigen gefilterten Daten
+        if hasattr(self, 'current_filtered_data') and self.current_filtered_data is not None:
+            if len(filtered_data) == len(self.current_filtered_data):
+                print(f"Filter angewendet, aber Anzahl der Datensätze unverändert: {len(filtered_data)} Einträge.")
+            else:
+                print(f"Filter angewendet. Vorher: {len(self.current_filtered_data)} Einträge, nachher: {len(filtered_data)} Einträge.")
+        else:
+            print(f"Initiale Filterung durchgeführt: {len(filtered_data)} Einträge.")
+                
+        # Store the filtered data for later use
+        self.current_filtered_data = filtered_data
         
         # Update the Team tab with the filtered data
-        for widget in self.team_tab.winfo_children():
-            widget.destroy()
-        self.team_frame = setup_team_tab(self.team_tab, self.data_manager, filtered_data)
+        if self.tabview.get() == "Team Members" or force_update_team:
+            print("Aktualisiere Team-Tab mit gefilterten Daten...")
+            for widget in self.team_tab.winfo_children():
+                widget.destroy()
+            self.team_frame = setup_team_tab(self.team_tab, self.data_manager, filtered_data)
     
     def close_app(self, event=None):
         """Closes the application"""
