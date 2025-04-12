@@ -4,24 +4,24 @@ import customtkinter as ctk
 
 
 def create_customer_pie_chart(frame, customer_data):
-    """Erstellt ein Kuchendiagramm der Zeit pro Kunde"""
-    # Lösche bisherige Widgets
+    """Creates a pie chart showing time per customer"""
+    # Clear previous widgets
     for widget in frame.winfo_children():
         widget.destroy()
         
-    # Titel
-    title_label = ctk.CTkLabel(frame, text="Zeit pro Kunde", font=("Arial", 14, "bold"))
+    # Title
+    title_label = ctk.CTkLabel(frame, text="Time per Customer", font=("Arial", 14, "bold"))
     title_label.pack(pady=(10, 5))
     
-    # Prüfe ob Daten verfügbar sind
+    # Check if data is available
     if customer_data.empty:
-        ctk.CTkLabel(frame, text="Keine Daten verfügbar").pack(pady=50)
+        ctk.CTkLabel(frame, text="No data available").pack(pady=50)
         return
         
-    # Erstelle das Diagramm
+    # Create the chart
     fig, ax = plt.subplots(figsize=(5, 4), dpi=100)
     ax.pie(
-        customer_data['Minuten'], 
+        customer_data['Minutes'], 
         labels=customer_data['Kunden'],
         autopct='%1.1f%%',
         startangle=90,
@@ -30,85 +30,85 @@ def create_customer_pie_chart(frame, customer_data):
     ax.axis('equal')  # Ensures the pie chart is circular
     plt.tight_layout()
     
-    # Füge das Diagramm in den Frame ein
+    # Add the chart to the frame
     canvas = FigureCanvasTkAgg(fig, master=frame)
     canvas.draw()
     canvas.get_tk_widget().pack(fill="both", expand=True)
 
 
 def create_daily_line_chart(frame, daily_data):
-    """Erstellt ein Liniendiagramm der Zeit pro Tag"""
-    # Lösche bisherige Widgets
+    """Creates a line chart showing time per day"""
+    # Clear previous widgets
     for widget in frame.winfo_children():
         widget.destroy()
         
-    # Titel
-    title_label = ctk.CTkLabel(frame, text="Zeit pro Tag", font=("Arial", 14, "bold"))
+    # Title
+    title_label = ctk.CTkLabel(frame, text="Time per Day", font=("Arial", 14, "bold"))
     title_label.pack(pady=(10, 5))
     
-    # Prüfe ob Daten verfügbar sind
+    # Check if data is available
     if daily_data.empty:
-        ctk.CTkLabel(frame, text="Keine Daten verfügbar").pack(pady=50)
+        ctk.CTkLabel(frame, text="No data available").pack(pady=50)
         return
         
-    # Erstelle das Diagramm
+    # Create the chart
     fig, ax = plt.subplots(figsize=(5, 4), dpi=100)
     ax.plot(
-        daily_data['Datum'], 
-        daily_data['Minuten'] / 60,  # Konvertiere zu Stunden
+        daily_data['Date'], 
+        daily_data['Minutes'] / 60,  # Convert to hours
         marker='o',
         linestyle='-',
         color='#007acc'
     )
     
-    # Formatierung
-    ax.set_ylabel('Stunden')
-    ax.set_xlabel('Datum')
+    # Formatting
+    ax.set_ylabel('Hours')
+    ax.set_xlabel('Date')
     ax.grid(True, linestyle='--', alpha=0.7)
     
     # Rotate x-axis labels for better readability
     plt.xticks(rotation=45)
     plt.tight_layout()
     
-    # Füge das Diagramm in den Frame ein
+    # Add the chart to the frame
     canvas = FigureCanvasTkAgg(fig, master=frame)
     canvas.draw()
     canvas.get_tk_widget().pack(fill="both", expand=True)
 
 
 def create_project_bar_chart(frame, project_data, top_n=10):
-    """Erstellt ein Balkendiagramm der Zeit pro Projekt"""
-    # Lösche bisherige Widgets
+    """Creates a bar chart showing time per project"""
+    # Clear previous widgets
     for widget in frame.winfo_children():
         widget.destroy()
         
-    # Titel
-    title_label = ctk.CTkLabel(frame, text="Zeit pro Projekt", font=("Arial", 14, "bold"))
+    # Title
+    title_label = ctk.CTkLabel(frame, text="Time per Project", font=("Arial", 14, "bold"))
     title_label.pack(pady=(10, 5))
     
-    # Prüfe ob Daten verfügbar sind
+    # Check if data is available
     if project_data.empty:
-        ctk.CTkLabel(frame, text="Keine Daten verfügbar").pack(pady=50)
+        ctk.CTkLabel(frame, text="No data available").pack(pady=50)
         return
         
-    # Limitiere auf Top N Projekte für bessere Lesbarkeit
+    # Limit to top N projects for better readability
     if len(project_data) > top_n:
         project_data = project_data.head(top_n)
         
-    # Erstelle das Diagramm
+    # Create the chart
     fig, ax = plt.subplots(figsize=(8, 4), dpi=100)
     bars = ax.barh(
         project_data['Auftrag'], 
-        project_data['Minuten'] / 60,  # Konvertiere zu Stunden
+        project_data['Minutes'] / 60,  # Convert to hours
         color='#5cb85c'
     )
     
-    # Formatierung
-    ax.set_xlabel('Stunden')
-    ax.set_title('Top Projekte nach Zeitaufwand')
+    # Formatting
+    ax.set_xlabel('Hours')
+    ax.set_title('Top Projects by Time Spent')
     ax.grid(True, axis='x', linestyle='--', alpha=0.7)
     
-    # Werte am Ende der Balken anzeigen
+    # Display values at the end of bars
     for bar in bars:
         width = bar.get_width()
         label_x_pos = width + 0.1
@@ -117,7 +117,7 @@ def create_project_bar_chart(frame, project_data, top_n=10):
     
     plt.tight_layout()
     
-    # Füge das Diagramm in den Frame ein
+    # Add the chart to the frame
     canvas = FigureCanvasTkAgg(fig, master=frame)
     canvas.draw()
     canvas.get_tk_widget().pack(fill="both", expand=True)

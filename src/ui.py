@@ -1,8 +1,9 @@
 import customtkinter as ctk
 import os
-from .data_manager import TimeDataManager
-from .charts import create_customer_pie_chart, create_daily_line_chart, create_project_bar_chart
-from .tabs import setup_time_entries_tab, setup_statistics_tab, setup_reports_tab
+# Change relative imports to absolute imports
+from src.data_manager import TimeDataManager
+from src.charts import create_customer_pie_chart, create_daily_line_chart, create_project_bar_chart
+from src.tabs import setup_time_entries_tab, setup_statistics_tab, setup_reports_tab
 
 
 class App(ctk.CTk):
@@ -12,17 +13,17 @@ class App(ctk.CTk):
         self.geometry("1500x1000")
         self.title("Time Tracker")
         
-        # Initialisiere den TimeDataManager mit den CSV-Daten
+        # Initialize the TimeDataManager with the CSV data
         csv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 
                                "data", "example_csv_time.csv")
         self.data_manager = TimeDataManager(csv_path)
         
-        # UI-Komponenten initialisieren
+        # Initialize UI components
         self.chart_frames = None
         self.create_widgets()
 
     def create_widgets(self) -> None:
-        # Erstelle die Hauptframes mit verschiedenen Grautönen
+        # Create the main frames with different gray shades
         self.top_frame = ctk.CTkFrame(self, fg_color="#424242", height=100)
         self.top_frame.pack(side="top", fill="x", padx=10, pady=10)
 
@@ -45,59 +46,59 @@ class App(ctk.CTk):
         )
         self.title_label.pack(pady=30)
 
-        # Kunden-Auswahl hinzufügen mit den tatsächlichen Kundendaten
+        # Add customer selection with actual customer data
         self._setup_left_panel()
 
         # Create tabview in right frame
         self.create_tabview()
 
     def _setup_left_panel(self):
-        """Erstellt die Steuerelemente im linken Panel"""
-        # Überschrift
-        settings_label = ctk.CTkLabel(self.left_frame, text="Einstellungen", font=("Arial", 18))
+        """Creates the controls in the left panel"""
+        # Heading
+        settings_label = ctk.CTkLabel(self.left_frame, text="Settings", font=("Arial", 18))
         settings_label.pack(pady=(20, 20))
         
-        # Kundenauswahl
-        self.customer_label = ctk.CTkLabel(self.left_frame, text="Kunde auswählen:")
+        # Customer selection
+        self.customer_label = ctk.CTkLabel(self.left_frame, text="Select customer:")
         self.customer_label.pack(pady=(10, 5))
         
-        # "Alle Kunden" Option hinzufügen
-        customers = ["Alle Kunden"] + self.data_manager.customers
+        # Add "All Customers" option
+        customers = ["All Customers"] + self.data_manager.customers
         
         self.optionmenu = ctk.CTkOptionMenu(
             self.left_frame, values=customers, command=self.set_customer
         )
-        self.optionmenu.set("Alle Kunden")
+        self.optionmenu.set("All Customers")
         self.optionmenu.pack(pady=(0, 20))
         
-        # Datum-Bereich
-        date_label = ctk.CTkLabel(self.left_frame, text="Zeitraum:")
+        # Date range
+        date_label = ctk.CTkLabel(self.left_frame, text="Time period:")
         date_label.pack(pady=(10, 5))
         
-        # Erstellte eine Dropdown für Zeiträume
-        date_ranges = ["Letzte Woche", "Letzter Monat", "Letztes Quartal", "Alle Zeiten"]
+        # Create dropdown for time periods
+        date_ranges = ["Last Week", "Last Month", "Last Quarter", "All Time"]
         self.date_option = ctk.CTkOptionMenu(
             self.left_frame, values=date_ranges, command=self.update_date_range
         )
-        self.date_option.set("Alle Zeiten")
+        self.date_option.set("All Time")
         self.date_option.pack(pady=(0, 20))
         
-        # Aktualisieren-Button
+        # Refresh button
         refresh_button = ctk.CTkButton(
-            self.left_frame, text="Aktualisieren", command=self.refresh_data
+            self.left_frame, text="Refresh", command=self.refresh_data
         )
         refresh_button.pack(pady=(30, 10))
         
-        # Statistik-Zusammenfassung
-        self.summary_label = ctk.CTkLabel(self.left_frame, text="Statistik Übersicht:")
+        # Statistics summary
+        self.summary_label = ctk.CTkLabel(self.left_frame, text="Statistics Overview:")
         self.summary_label.pack(pady=(30, 5))
         
-        # Frame für Zusammenfassung
+        # Frame for summary
         summary_frame = ctk.CTkFrame(self.left_frame, fg_color="#6B6B6B")
         summary_frame.pack(pady=10, padx=10, fill="x")
         
-        # Gesamt Zeit
-        self.total_time_label = ctk.CTkLabel(summary_frame, text="Gesamtzeit: 0h 0m")
+        # Total time
+        self.total_time_label = ctk.CTkLabel(summary_frame, text="Total time: 0h 0m")
         self.total_time_label.pack(pady=(10, 5), padx=10, anchor="w")
         
         # Update the summary
@@ -109,33 +110,33 @@ class App(ctk.CTk):
         self.tabview.pack(padx=20, pady=20, fill="both", expand=True)
 
         # Create the three tabs
-        self.time_entries_tab = self.tabview.add("Zeiteintragungen")
-        self.statistics_tab = self.tabview.add("Statistiken")
-        self.reports_tab = self.tabview.add("Berichte")
+        self.time_entries_tab = self.tabview.add("Time Entries")
+        self.statistics_tab = self.tabview.add("Statistics")
+        self.reports_tab = self.tabview.add("Reports")
 
         # Set default tab
-        self.tabview.set("Statistiken")
+        self.tabview.set("Statistics")
         
-        # Fülle die Tabs mit Inhalt - jetzt aus externen Funktionen
+        # Fill the tabs with content - now from external functions
         setup_time_entries_tab(self.time_entries_tab, self.data_manager.data)
         self.chart_frames = setup_statistics_tab(self.statistics_tab, self.data_manager)
         self.report_widgets = setup_reports_tab(self.reports_tab)
     
     def set_customer(self, customer: str) -> None:
-        """Behandelt die Kundenauswahl und aktualisiert die Daten"""
+        """Handles the customer selection and updates the data"""
         self.refresh_data()
     
     def update_date_range(self, range_option: str) -> None:
-        """Aktualisiert den Datumsbereich für die Filterung"""
-        # Diese Funktion würde die Daten nach Datum filtern
+        """Updates the date range for filtering"""
+        # This function would filter the data by date
         self.refresh_data()
     
     def refresh_data(self):
-        """Aktualisiert alle Diagramme und Ansichten"""
+        """Updates all charts and views"""
         selected_customer = self.optionmenu.get()
-        customer = None if selected_customer == "Alle Kunden" else selected_customer
+        customer = None if selected_customer == "All Customers" else selected_customer
         
-        # Aktualisiere die Diagramme mit den externen Chart-Funktionen
+        # Update the charts with external chart functions
         if self.chart_frames:
             customer_data = self.data_manager.get_time_by_customer()
             daily_data = self.data_manager.get_time_by_day(customer)
@@ -145,27 +146,27 @@ class App(ctk.CTk):
             create_daily_line_chart(self.chart_frames['daily_chart_frame'], daily_data)
             create_project_bar_chart(self.chart_frames['project_chart_frame'], project_data)
         
-        # Aktualisiere die Zusammenfassung
+        # Update the summary
         self.update_summary()
     
     def update_summary(self):
-        """Aktualisiert die Zusammenfassung im linken Panel"""
+        """Updates the summary in the left panel"""
         selected_customer = self.optionmenu.get()
-        customer = None if selected_customer == "Alle Kunden" else selected_customer
+        customer = None if selected_customer == "All Customers" else selected_customer
         
-        # Berechne die Gesamtzeit
+        # Calculate the total time
         total_minutes = self.data_manager.get_total_time(customer)
         hours = int(total_minutes // 60)
         minutes = int(total_minutes % 60)
         
-        # Aktualisiere das Label
-        self.total_time_label.configure(text=f"Gesamtzeit: {hours}h {minutes}m")
+        # Update the label
+        self.total_time_label.configure(text=f"Total time: {hours}h {minutes}m")
         
-        # Wenn ein bestimmter Kunde ausgewählt ist, aktualisiere den Text entsprechend
+        # If a specific customer is selected, update the text accordingly
         if customer:
-            self.summary_label.configure(text=f"Statistik für {customer}:")
+            self.summary_label.configure(text=f"Statistics for {customer}:")
         else:
-            self.summary_label.configure(text="Statistik Übersicht:")
+            self.summary_label.configure(text="Statistics Overview:")
 
 
 if __name__ == "__main__":

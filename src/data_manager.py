@@ -13,23 +13,23 @@ class TimeDataManager:
         try:
             df = pd.read_csv(self.csv_path)
             
-            # Konvertiere Zeiten zu Minuten für einfachere Berechnungen
-            df['Minuten'] = df['Dauer'].apply(self._convert_time_to_minutes)
+            # Convert times to minutes for easier calculations
+            df['Minutes'] = df['Dauer'].apply(self._convert_time_to_minutes)
             
-            # Versuche Datum aus der Notiz zu extrahieren, ansonsten verwende das aktuelle Datum
-            df['Datum'] = df['Notiz'].apply(self._extract_date_from_note)
+            # Try to extract date from the notes, otherwise use current date
+            df['Date'] = df['Notiz'].apply(self._extract_date_from_note)
             
             return df
         except Exception as e:
-            print(f"Fehler beim Laden der CSV-Datei: {e}")
+            print(f"Error loading the CSV file: {e}")
             return pd.DataFrame()
     
     def _extract_date_from_note(self, note):
-        """Extrahiert ein Datum aus der Notiz wenn vorhanden"""
+        """Extracts a date from the note if available"""
         if not isinstance(note, str):
             return datetime.now()
         
-        # Suche nach Datumsmuster in der Notiz (Format: DD.MM.YYYY)
+        # Look for date pattern in the note (format: DD.MM.YYYY)
         date_pattern = r'(\d{2}\.\d{2}\.\d{4})'
         match = re.search(date_pattern, note)
         
@@ -42,7 +42,7 @@ class TimeDataManager:
         return datetime.now()
     
     def _convert_time_to_minutes(self, time_str):
-        # Extrahiere Stunden, Minuten und Sekunden aus dem Format "1h 32m 00s"
+        # Extract hours, minutes and seconds from the format "1h 32m 00s"
         pattern = r"(\d+)h\s+(\d+)m\s+(\d+)s"
         match = re.search(pattern, time_str)
         
@@ -70,13 +70,13 @@ class TimeDataManager:
         if filtered_data.empty:
             return pd.DataFrame()
             
-        # Gruppiere nach Datum und summiere die Minuten
-        daily_time = filtered_data.groupby('Datum')['Minuten'].sum().reset_index()
+        # Group by date and sum the minutes
+        daily_time = filtered_data.groupby('Date')['Minutes'].sum().reset_index()
         return daily_time
     
     def get_time_by_customer(self):
-        customer_time = self.data.groupby('Kunden')['Minuten'].sum().reset_index()
-        customer_time = customer_time.sort_values('Minuten', ascending=False)
+        customer_time = self.data.groupby('Kunden')['Minutes'].sum().reset_index()
+        customer_time = customer_time.sort_values('Minutes', ascending=False)
         return customer_time
     
     def get_time_by_project(self, customer_name=None):
@@ -85,28 +85,28 @@ class TimeDataManager:
         else:
             filtered_data = self.data
             
-        project_time = filtered_data.groupby('Auftrag')['Minuten'].sum().reset_index()
-        project_time = project_time.sort_values('Minuten', ascending=False)
+        project_time = filtered_data.groupby('Auftrag')['Minutes'].sum().reset_index()
+        project_time = project_time.sort_values('Minutes', ascending=False)
         return project_time
         
     def get_total_time(self, customer_name=None):
         if customer_name:
             filtered_data = self.filter_by_customer(customer_name)
-            return filtered_data['Minuten'].sum()
-        return self.data['Minuten'].sum()
+            return filtered_data['Minutes'].sum()
+        return self.data['Minutes'].sum()
         
     def filter_by_date_range(self, range_option):
-        """Filtert die Daten nach einem bestimmten Zeitraum"""
+        """Filters the data by a specific time period"""
         today = datetime.now()
         
-        if range_option == "Letzte Woche":
+        if range_option == "Last Week":
             start_date = today - timedelta(days=7)
-            return self.data[self.data['Datum'] >= start_date]
-        elif range_option == "Letzter Monat":
+            return self.data[self.data['Date'] >= start_date]
+        elif range_option == "Last Month":
             start_date = today - timedelta(days=30)
-            return self.data[self.data['Datum'] >= start_date]
-        elif range_option == "Letztes Quartal":
+            return self.data[self.data['Date'] >= start_date]
+        elif range_option == "Last Quarter":
             start_date = today - timedelta(days=90)
-            return self.data[self.data['Datum'] >= start_date]
-        else:  # "Alle Zeiten"
+            return self.data[self.data['Date'] >= start_date]
+        else:  # "All Time"
             return self.data
