@@ -223,7 +223,346 @@ def setup_reports_tab(tab):
     }
 
 
-def setup_team_tab(tab, data_manager, filtered_data=None):
+def setup_fibu_tab(tab):
+    """
+    Shows the Fibu (accounting) yearly sheet with financial accounting data
+    organized by months and customers
+    """
+    import pandas as pd
+    from src.data_manager import TimeDataManager
+    import os
+    
+    # Container for the Fibu section
+    fibu_container = ctk.CTkFrame(tab)
+    fibu_container.pack(padx=20, pady=20, fill="both", expand=True)
+    
+    # Create a title for the tab
+    title_label = ctk.CTkLabel(
+        fibu_container, text="Finanzbuchhaltung Jahresübersicht", font=("Arial", 18, "bold")
+    )
+    title_label.pack(pady=(10, 20))
+    
+    # Control frame for year selection and filters
+    control_frame = ctk.CTkFrame(fibu_container)
+    control_frame.pack(fill="x", padx=10, pady=10)
+    
+    # Year selection
+    year_label = ctk.CTkLabel(control_frame, text="Jahr auswählen:", font=("Arial", 14))
+    year_label.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+    
+    # Get current year as default
+    import datetime
+    current_year = datetime.datetime.now().year
+    years = [str(year) for year in range(current_year-5, current_year+1)]
+    
+    year_var = ctk.StringVar(value=str(current_year))
+    year_dropdown = ctk.CTkOptionMenu(
+        control_frame,
+        values=years,
+        variable=year_var,
+        command=lambda selected_year: refresh_fibu_data(selected_year, customer_var.get())
+    )
+    year_dropdown.grid(row=0, column=1, padx=10, pady=10, sticky="w")
+    
+    # Customer filter
+    customer_label = ctk.CTkLabel(control_frame, text="Kunde filtern:", font=("Arial", 14))
+    customer_label.grid(row=0, column=2, padx=(20, 10), pady=10, sticky="w")
+    
+    # Get data manager instance to fetch customers
+    csv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "time.csv")
+    data_manager = TimeDataManager(csv_path)
+    
+    # Create customer dropdown with "All Customers" option
+    customers = ["Alle Kunden"] + sorted(data_manager.customers)
+    customer_var = ctk.StringVar(value="Alle Kunden")
+    customer_dropdown = ctk.CTkOptionMenu(
+        control_frame,
+        values=customers,
+        variable=customer_var,
+        command=lambda selected_customer: refresh_fibu_data(year_var.get(), selected_customer)
+    )
+    customer_dropdown.grid(row=0, column=3, padx=10, pady=10, sticky="w")
+    
+    # Additional button frame for exporting data
+    button_frame = ctk.CTkFrame(control_frame, fg_color="transparent")
+    button_frame.grid(row=0, column=4, padx=(30, 10), pady=10, sticky="e")
+    
+    export_button = ctk.CTkButton(
+        button_frame, 
+        text="Exportieren als CSV",
+        command=lambda: export_fibu_data(year_var.get(), customer_var.get())
+    )
+    export_button.pack(side="right", padx=10)
+    
+    # Create the main data container with scrolling capability
+    data_scroll_frame = ctk.CTkScrollableFrame(fibu_container)
+    data_scroll_frame.pack(fill="both", expand=True, padx=10, pady=10)
+    
+    # Status label for data operations
+    status_label = ctk.CTkLabel(
+        fibu_container,
+        text="",
+        font=("Arial", 12),
+        text_color="#4CAF50"  # Green color for status
+    )
+    status_label.pack(pady=(5, 10), fill="x")
+    
+    # Main data table
+    data_table_frame = ctk.CTkFrame(data_scroll_frame)
+    data_table_frame.pack(fill="both", expand=True)
+    
+    # Function to update the data table
+    def update_data_table(fibu_data):
+        # Clear existing widgets in the table
+        for widget in data_table_frame.winfo_children():
+            widget.destroy()
+            
+        if fibu_data is None or fibu_data.empty:
+            no_data_label = ctk.CTkLabel(
+                data_table_frame,
+                text="Keine Daten für die ausgewählten Filter verfügbar.",
+                font=("Arial", 14)
+            )
+            no_data_label.pack(pady=50)
+            return
+            
+        # Define columns: Month, Customer, Hours, Amount, etc.
+        col_names = ["Monat", "Kunde", "Projekt", "Aufgaben", "Stunden", "Abgerechnet", "FiBu-Status"]
+        col_widths = [80, 180, 150, 180, 80, 100, 100]
+        
+        # Create header row
+        for col_idx, (col_name, col_width) in enumerate(zip(col_names, col_widths)):
+            header = ctk.CTkLabel(
+                data_table_frame,
+                text=col_name,
+                font=("Arial", 12, "bold"),
+                width=col_width
+            )
+            header.grid(row=0, column=col_idx, padx=5, pady=5, sticky="w")
+        
+        # Add separator
+        separator = ctk.CTkFrame(data_table_frame, height=1, fg_color="gray")
+        separator.grid(row=1, column=0, columnspan=len(col_names), sticky="ew", padx=5, pady=2)
+        
+        # Create data rows
+        month_names = [
+            "Januar", "Februar", "März", "April", "Mai", "Juni",
+            "Juli", "August", "September", "Oktober", "November", "Dezember"
+        ]
+        
+        # Group data by month and customer
+        if 'Month' in fibu_data.columns:
+            # Group by month and customer
+            grouped_data = fibu_data.groupby(['Month', 'Kunden', 'Projekte']).agg({
+                'Notiz': lambda x: '; '.join(set(filter(lambda y: isinstance(y, str), x)))[:50],
+                'Hours': 'sum',
+                'Abgerechnet': lambda x: 'Ja' if all(x) else 'Teilweise' if any(x) else 'Nein'
+            }).reset_index()
+            
+            # Sort by month and customer
+            grouped_data = grouped_data.sort_values(['Month', 'Kunden'])
+            
+            # Create rows
+            for idx, (_, row) in enumerate(grouped_data.iterrows(), start=2):
+                # Month name
+                month_name = month_names[row['Month']-1] if 1 <= row['Month'] <= 12 else str(row['Month'])
+                
+                month_label = ctk.CTkLabel(
+                    data_table_frame,
+                    text=month_name,
+                    width=col_widths[0]
+                )
+                month_label.grid(row=idx, column=0, padx=5, pady=2, sticky="w")
+                
+                # Customer
+                customer_label = ctk.CTkLabel(
+                    data_table_frame,
+                    text=row['Kunden'],
+                    width=col_widths[1]
+                )
+                customer_label.grid(row=idx, column=1, padx=5, pady=2, sticky="w")
+                
+                # Project type
+                project_label = ctk.CTkLabel(
+                    data_table_frame,
+                    text=row['Projekte'],
+                    width=col_widths[2]
+                )
+                project_label.grid(row=idx, column=2, padx=5, pady=2, sticky="w")
+                
+                # Tasks (from notes)
+                tasks_text = row['Notiz']
+                if tasks_text and len(tasks_text) > 30:
+                    tasks_text = tasks_text[:27] + "..."
+                    
+                tasks_label = ctk.CTkLabel(
+                    data_table_frame,
+                    text=tasks_text if tasks_text else "-",
+                    width=col_widths[3]
+                )
+                tasks_label.grid(row=idx, column=3, padx=5, pady=2, sticky="w")
+                
+                # Hours
+                hours_label = ctk.CTkLabel(
+                    data_table_frame,
+                    text=f"{row['Hours']:.2f}",
+                    width=col_widths[4]
+                )
+                hours_label.grid(row=idx, column=4, padx=5, pady=2, sticky="w")
+                
+                # Invoiced status
+                invoice_status = row['Abgerechnet']
+                invoice_color = "#4CAF50" if invoice_status == 'Ja' else "#FFC107" if invoice_status == 'Teilweise' else "#F44336"
+                
+                invoice_label = ctk.CTkLabel(
+                    data_table_frame,
+                    text=invoice_status,
+                    text_color=invoice_color,
+                    font=("Arial", 12, "bold"),
+                    width=col_widths[5]
+                )
+                invoice_label.grid(row=idx, column=5, padx=5, pady=2, sticky="w")
+                
+                # FIBU status - Here just placeholder
+                fibu_status = "Verbucht" if row['Abgerechnet'] == 'Ja' else "Offen"
+                fibu_color = "#4CAF50" if fibu_status == "Verbucht" else "#F44336"
+                
+                fibu_label = ctk.CTkLabel(
+                    data_table_frame,
+                    text=fibu_status,
+                    text_color=fibu_color,
+                    font=("Arial", 12, "bold"),
+                    width=col_widths[6]
+                )
+                fibu_label.grid(row=idx, column=6, padx=5, pady=2, sticky="w")
+            
+            # Add summary row at the bottom
+            summary_row = len(grouped_data) + 2
+            
+            # Add separator before summary
+            separator = ctk.CTkFrame(data_table_frame, height=1, fg_color="gray")
+            separator.grid(row=summary_row, column=0, columnspan=len(col_names), sticky="ew", padx=5, pady=2)
+            
+            # Total label
+            total_label = ctk.CTkLabel(
+                data_table_frame,
+                text="Gesamt:",
+                font=("Arial", 12, "bold"),
+                width=col_widths[0]
+            )
+            total_label.grid(row=summary_row+1, column=0, padx=5, pady=5, sticky="w")
+            
+            # Total hours
+            total_hours = fibu_data['Hours'].sum()
+            total_hours_label = ctk.CTkLabel(
+                data_table_frame,
+                text=f"{total_hours:.2f}",
+                font=("Arial", 12, "bold"),
+                width=col_widths[4]
+            )
+            total_hours_label.grid(row=summary_row+1, column=4, padx=5, pady=5, sticky="w")
+            
+            # Total invoiced percentage
+            invoiced_hours = fibu_data[fibu_data['Abgerechnet'] == True]['Hours'].sum()
+            percentage = (invoiced_hours / total_hours * 100) if total_hours > 0 else 0
+            
+            total_invoiced_label = ctk.CTkLabel(
+                data_table_frame,
+                text=f"{percentage:.1f}% abgerechnet",
+                font=("Arial", 12, "bold"),
+                width=col_widths[5]
+            )
+            total_invoiced_label.grid(row=summary_row+1, column=5, padx=5, pady=5, sticky="w")
+            
+        else:
+            no_data_label = ctk.CTkLabel(
+                data_table_frame,
+                text="Die Daten enthalten keine Monatsinformationen.",
+                font=("Arial", 14)
+            )
+            no_data_label.pack(pady=50)
+    
+    # Function to refresh the data based on selections
+    def refresh_fibu_data(year, customer):
+        try:
+            # Update status
+            status_label.configure(text="Daten werden geladen...", text_color="#FFC107")
+            tab.update()  # Force UI update
+            
+            # Filter data by year
+            year_int = int(year)
+            year_data = data_manager.filter_by_year(year_int)
+            
+            # Filter by customer if not "All Customers"
+            if customer != "Alle Kunden":
+                year_data = year_data[year_data['Kunden'] == customer]
+            
+            # Show only entries of type "Finanzbuchhaltung"
+            fibu_data = year_data[year_data['Projekte'] == "Finanzbuchhaltung"]
+            
+            # Update the table with filtered data
+            update_data_table(fibu_data)
+            
+            # Update status
+            entry_count = len(fibu_data) if fibu_data is not None else 0
+            status_label.configure(
+                text=f"Daten geladen: {entry_count} Einträge gefunden für {year}", 
+                text_color="#4CAF50"
+            )
+            
+        except Exception as e:
+            status_label.configure(
+                text=f"Fehler beim Laden der Daten: {str(e)}", 
+                text_color="#F44336"
+            )
+    
+    # Function to export data to CSV
+    def export_fibu_data(year, customer):
+        try:
+            # Filter data by year
+            year_int = int(year)
+            year_data = data_manager.filter_by_year(year_int)
+            
+            # Filter by customer if not "All Customers"
+            if customer != "Alle Kunden":
+                year_data = year_data[year_data['Kunden'] == customer]
+            
+            # Show only entries of type "Finanzbuchhaltung"
+            fibu_data = year_data[year_data['Projekte'] == "Finanzbuchhaltung"]
+            
+            if fibu_data is None or fibu_data.empty:
+                status_label.configure(
+                    text="Keine Daten zum Exportieren vorhanden.", 
+                    text_color="#F44336"
+                )
+                return
+            
+            # Create export filename
+            customer_suffix = customer.replace(" ", "_") if customer != "Alle Kunden" else "Alle_Kunden"
+            export_filename = f"Fibu_{year}_{customer_suffix}.csv"
+            export_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", export_filename)
+            
+            # Export the data
+            fibu_data.to_csv(export_path, index=False)
+            
+            status_label.configure(
+                text=f"Daten exportiert nach: {export_filename}", 
+                text_color="#4CAF50"
+            )
+            
+        except Exception as e:
+            status_label.configure(
+                text=f"Fehler beim Exportieren der Daten: {str(e)}", 
+                text_color="#F44336"
+            )
+    
+    # Initial data load
+    refresh_fibu_data(year_var.get(), customer_var.get())
+    
+    return fibu_container
+
+
+def setup_team_tab(tab, data_manager, filtered_data=None, show_initial_data=False):
     """Shows the team members and their time entries with applied filters"""
     if filtered_data is None:
         filtered_data = data_manager.data
@@ -238,6 +577,9 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
     )
     title_label.pack(pady=(10, 20))
     
+    # Limitiere Datenmenge für bessere Performance
+    max_entries_per_member = 100  # Eine vernünftige Grenze
+    
     # Get unique team members from the filtered data
     team_members = sorted(filtered_data['Teammitglied'].unique())
     
@@ -248,11 +590,15 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
             font=("Arial", 14)
         )
         no_data_label.pack(pady=50)
-        return
+        return team_container
     
-    # Create frame for team members (not scrollable)
-    team_frame = ctk.CTkFrame(team_container)
-    team_frame.pack(fill="both", expand=True, padx=10, pady=10)
+    # Create scrollable frame for team members to improve performance
+    team_scroll_frame = ctk.CTkScrollableFrame(team_container)
+    team_scroll_frame.pack(fill="both", expand=True, padx=10, pady=10)
+    
+    # Create frame for team members within the scrollable frame
+    team_frame = ctk.CTkFrame(team_scroll_frame, fg_color="transparent")
+    team_frame.pack(fill="both", expand=True)
     
     # Store toggle state for each member
     toggle_states = {}
@@ -268,12 +614,13 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
         member_frame = ctk.CTkFrame(team_frame)
         member_frame.pack(fill="x", expand=True, padx=5, pady=10, anchor="n")
         
-        # Get entries for this member
-        member_data = filtered_data[filtered_data['Teammitglied'] == member]
+        # Get entries for this member - limit to improve performance
+        member_data = filtered_data[filtered_data['Teammitglied'] == member].head(max_entries_per_member)
         
         # Summary statistics for this member
         total_hours = member_data['Hours'].sum()
         total_entries = len(member_data)
+        total_entries_all = len(filtered_data[filtered_data['Teammitglied'] == member])
         
         # Create a frame for the collapsible header
         header_frame = ctk.CTkFrame(member_frame, fg_color="#3a7ebf", corner_radius=8)
@@ -290,9 +637,13 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
         member_header.pack(side="left", fill="x", padx=10, pady=5, expand=True)
         
         # Add statistics summary next to the name
+        entries_msg = f"Total Hours: {total_hours:.2f}   |   Entries: {total_entries}"
+        if total_entries_all > max_entries_per_member:
+            entries_msg += f" (showing {max_entries_per_member} of {total_entries_all})"
+            
         stats_summary = ctk.CTkLabel(
             header_frame,
-            text=f"Total Hours: {total_hours:.2f}   |   Entries: {total_entries}",
+            text=entries_msg,
             font=("Arial", 12),
             text_color="white"
         )
@@ -300,11 +651,15 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
         
         # Create a container for the collapsible content
         content_container = ctk.CTkFrame(member_frame)
-        content_container.pack(fill="x", padx=10, pady=5)
+        
+        # Initially hide content to improve initial rendering performance unless show_initial_data is True
+        toggle_states[member] = show_initial_data
+        if show_initial_data:
+            content_container.pack(fill="x", padx=10, pady=5)
         
         # Function to toggle visibility of the entries
         def toggle_entries(container=content_container, member_name=member):
-            if toggle_states.get(member_name, True):
+            if toggle_states.get(member_name, False):
                 container.pack_forget()
                 toggle_states[member_name] = False
             else:
@@ -315,9 +670,6 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
         member_header.bind("<Button-1>", lambda e, toggle_func=toggle_entries: toggle_func())
         stats_summary.bind("<Button-1>", lambda e, toggle_func=toggle_entries: toggle_func())
         header_frame.bind("<Button-1>", lambda e, toggle_func=toggle_entries: toggle_func())
-        
-        # Initially set to expanded
-        toggle_states[member] = True
         
         # Initialize sort direction for each column
         sort_directions[member] = {
@@ -349,7 +701,7 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
             "Invoiced": "Abgerechnet"
         }
         
-        # Function to reload the table with sorted data
+        # Function to reload the table with sorted data - optimized version
         def reload_table(entries_frame, member_data, sort_column, member_name=member):
             # Reverse sort direction
             sort_directions[member_name][sort_column] = not sort_directions[member_name][sort_column]
@@ -370,8 +722,8 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
                 if widget.grid_info().get('row', 0) >= 2:
                     widget.destroy()
             
-            # Display new sorted entries
-            for k, row in enumerate(sorted_data.itertuples(), 2):
+            # Display new sorted entries - limited to improve performance
+            for k, row in enumerate(sorted_data.head(max_entries_per_member).itertuples(), 2):
                 # Date - Fix to show End Date correctly in dd.mm.yyyy format without time
                 date_str = format_date_string(row)
                 
@@ -466,10 +818,10 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
         separator = ctk.CTkFrame(entries_frame, height=1, fg_color="gray")
         separator.grid(row=1, column=0, columnspan=len(headers), sticky="ew", padx=5, pady=2)
         
-        # Sort entries by date (initial sort)
-        member_data_sorted = member_data.sort_values('End Date', ascending=False)
+        # Sort entries by date (initial sort) - limited for performance
+        member_data_sorted = member_data.sort_values('End Date', ascending=False).head(max_entries_per_member)
         
-        # Show all entries for the member
+        # Show entries for the member
         for k, row in enumerate(member_data_sorted.itertuples(), 2):
             # Date - Fix to show End Date correctly in dd.mm.yyyy format without time
             date_str = format_date_string(row)
@@ -514,5 +866,11 @@ def setup_team_tab(tab, data_manager, filtered_data=None):
                 width=col_widths[4],
                 font=("Arial", 12, "bold")
             ).grid(row=k, column=4, padx=5, pady=2, sticky="w")
+        
+    # Wenn show_initial_data aktiviert ist, öffne automatisch die erste Sektion
+    if show_initial_data and team_members:
+        # Wähle den ersten Teammember aus und zeige dessen Daten an
+        first_member = team_members[0]
+        toggle_states[first_member] = True
     
     return team_container

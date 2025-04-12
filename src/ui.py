@@ -4,7 +4,7 @@ import datetime
 import re
 from src.data_manager import TimeDataManager
 from src.charts import create_customer_pie_chart, create_daily_line_chart, create_project_bar_chart
-from src.tabs import setup_time_entries_tab, setup_statistics_tab, setup_reports_tab, setup_team_tab
+from src.tabs import setup_time_entries_tab, setup_statistics_tab, setup_reports_tab, setup_team_tab, setup_fibu_tab
 
 
 class App(ctk.CTk):
@@ -259,19 +259,24 @@ class App(ctk.CTk):
         self.refresh_data()
 
     def create_tabview(self):
-        """Create and setup the tab view with the Team Members tab"""
+        """Create and setup the tab view with multiple tabs"""
         # Add tabview to right frame
         self.tabview = ctk.CTkTabview(self.right_frame, fg_color="#616161")
         self.tabview.pack(padx=20, pady=20, fill="both", expand=True)
 
-        # Create only the Team Members tab
+        # Create tabs
         self.team_tab = self.tabview.add("Team Members")
-
-        # Set default tab (only one tab available)
+        self.fibu_tab = self.tabview.add("Fibu Jahresblatt")
+        
+        # Set default tab
         self.tabview.set("Team Members")
         
-        # Fill the Team tab with content
+        # Fill the tabs with content
         self.team_frame = setup_team_tab(self.team_tab, self.data_manager)
+        self.fibu_frame = setup_fibu_tab(self.fibu_tab)
+        
+        # Add tab change event
+        self.tabview._segmented_button.configure(command=self.on_tab_change)
     
     def on_tab_change(self, tab_name):
         """Handle tab change event"""
@@ -279,7 +284,26 @@ class App(ctk.CTk):
         if tab_name == "Team Members":
             # Get current filter settings and apply them
             self.refresh_data(force_update_team=True)
-    
+        # If changing to the Fibu tab, make sure to initialize/update its content
+        elif tab_name == "Fibu Jahresblatt":
+            self.refresh_fibu_data()
+
+    def refresh_fibu_data(self):
+        """Update Fibu tab with current year data"""
+        try:
+            # Skip if fibu_frame is not yet initialized
+            if not hasattr(self, 'fibu_frame') or not self.fibu_frame:
+                return
+                
+            # Remove old Fibu content
+            for widget in self.fibu_tab.winfo_children():
+                widget.destroy()
+            
+            # Re-initialize Fibu tab with new content
+            self.fibu_frame = setup_fibu_tab(self.fibu_tab, self.data_manager)
+        except Exception as e:
+            print(f"Fehler beim Aktualisieren des Fibu-Tabs: {e}")
+            
     def refresh_data(self, force_update_team=False):
         """
         Updates all charts and views with the currently selected filters.
@@ -339,7 +363,11 @@ class App(ctk.CTk):
             print("Updating Team tab with filtered data...")
             for widget in self.team_tab.winfo_children():
                 widget.destroy()
-            self.team_frame = setup_team_tab(self.team_tab, self.data_manager, filtered_data)
+            self.team_frame = setup_team_tab(self.team_tab, self.data_manager, filtered_data, show_initial_data=True)
+            
+        # Update Fibu tab if it's the current one
+        if self.tabview.get() == "Fibu Jahresblatt":
+            self.refresh_fibu_data()
     
     def close_app(self, event=None):
         """Closes the application"""
