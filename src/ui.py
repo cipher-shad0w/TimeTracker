@@ -2,7 +2,7 @@ import customtkinter as ctk
 import os
 import re
 from src.data_manager import TimeDataManager
-from src.tabs import setup_team_tab
+from src.tabs import setup_team_tab, setup_fibu_tab, setup_main_tab
 
 
 class App(ctk.CTk):
@@ -46,7 +46,7 @@ class App(ctk.CTk):
         self.title_label = ctk.CTkLabel(
             self.top_frame, text="Time Tracker", font=("Arial", 24)
         )
-        self.title_label.pack(pady=30)
+        self.title_label.pack(pady=20)
 
         # Add customer selection with actual customer data
         self._setup_left_panel()
@@ -263,13 +263,16 @@ class App(ctk.CTk):
         self.tabview.pack(padx=20, pady=20, fill="both", expand=True)
 
         # Create tabs
-        self.team_tab = self.tabview.add("Team Members")
+        self.main_tab = self.tabview.add("Jahresabschluss")
         self.fibu_tab = self.tabview.add("Fibu Jahresblatt")
+        self.team_tab = self.tabview.add("Aufwand")
         
         # Set default tab
-        self.tabview.set("Team Members")
+        self.tabview.set("Jahresabschluss")
         
         # Fill the tabs with content
+        self.main_frame = setup_main_tab(self.main_tab, self.data_manager)
+        self.fibu_frame = setup_fibu_tab(self.fibu_tab, self.data_manager)
         self.team_frame = setup_team_tab(self.team_tab, self.data_manager)
         
         # Add tab change event
