@@ -72,142 +72,148 @@ def format_duration(duration):
 
 def setup_main_tab(tab, data_manager):
     """Shows the Jahresabschluss (annual financial summary)"""
-    
+
     # Create a main container frame
     main_container = ctk.CTkFrame(tab)
     main_container.pack(padx=20, pady=20, fill="both", expand=True)
-    
+
     # Create a title for the tab
     title_label = ctk.CTkLabel(
         main_container, text="Jahresabschluss", font=("Arial", 18, "bold")
     )
     title_label.pack(pady=(10, 20))
-    
+
     # Create a frame for the financial data
     financial_frame = ctk.CTkFrame(main_container)
     financial_frame.pack(padx=10, pady=10, fill="both", expand=True)
-    
+
     # Calculate total hours from data
     total_hours = data_manager.data['Hours'].sum() if 'Hours' in data_manager.data.columns else 0
-    
+
     # Variables to store input values
     total_income_var = ctk.StringVar()
-    hourly_rate_var = ctk.StringVar()
-    previous_rate_var = ctk.StringVar(value="0.0")  # Default value
+    previous_rate_var = ctk.StringVar(value="0.0")
     comparison_rate_var = ctk.StringVar()
-    
+
     # Function to recalculate dependent values
     def update_calculations(*args):
         try:
             # Get input values
-            total_income = float(total_income_var.get().replace(',', '.') or 0)
-            comparison_rate = float(comparison_rate_var.get().replace(',', '.') or 0)
-            
+            total_income = float(total_income_var.get().replace('.', ',') or 0)
+            comparison_rate = float(comparison_rate_var.get().replace('.', ',') or 0)
+
             # Calculate average hourly rate
             avg_hourly_rate = total_income / total_hours if total_hours > 0 else 0
             avg_hourly_rate_label.configure(text=f"{avg_hourly_rate:.2f} €/h")
-            
+
             # Calculate comparison value (hourly rate * total hours)
             comparison_value = comparison_rate * total_hours
             comparison_value_label.configure(text=f"{comparison_value:.2f} €")
-            
+
             # Calculate over/under amount
             diff_amount = total_income - comparison_value
             diff_amount_label.configure(
                 text=f"{diff_amount:.2f} €",
-                text_color="#4CAF50" if diff_amount >= 0 else "#F44336"  # Green if positive, red if negative
+                text_color="#4CAF50" if diff_amount >= 0 else "#F44336"
             )
         except (ValueError, ZeroDivisionError):
             # Handle invalid input
             pass
-    
+
     # Create rows for each data point with appropriate layout
     row = 0
     pad_y = (10, 5)
-    
+
     # 1. Label: Honorar fakultiert :: Input: Gesamte Abrechnung des Jahres
     ctk.CTkLabel(
         financial_frame, text="Honorar fakultiert:", font=("Arial", 14, "bold")
     ).grid(row=row, column=0, padx=(10, 5), pady=pad_y, sticky="w")
-    
+
     income_entry = ctk.CTkEntry(financial_frame, width=150, textvariable=total_income_var)
     income_entry.grid(row=row, column=1, padx=(5, 10), pady=pad_y, sticky="e")
     income_entry.bind("<KeyRelease>", update_calculations)
     row += 1
-    
+
     # 2. Label: Stunden Abgerechnet :: Input: €
     ctk.CTkLabel(
         financial_frame, text="Stunden Abgerechnet:", font=("Arial", 14, "bold")
     ).grid(row=row, column=0, padx=(10, 5), pady=pad_y, sticky="w")
-    
-    hours_label = ctk.CTkLabel(
-        financial_frame, text=f"{total_hours:.2f} h", font=("Arial", 14)
+
+    hours_label = ctk.CTkEntry(
+        financial_frame
     )
     hours_label.grid(row=row, column=1, padx=(5, 10), pady=pad_y, sticky="e")
+    hours_label.bind("<KeyRelease>", update_calculations)
     row += 1
-    
+
     # 3. Label: Durchschnittlicher Stundenlohn :: Label: Gesamter Betrag (1.) / echte Zeit
     ctk.CTkLabel(
         financial_frame, text="Durchschnittlicher Stundenlohn:", font=("Arial", 14, "bold")
     ).grid(row=row, column=0, padx=(10, 5), pady=pad_y, sticky="w")
-    
+
     avg_hourly_rate_label = ctk.CTkLabel(
-        financial_frame, text="0.00 €/h", font=("Arial", 14)
+        financial_frame, text="0,00 €/h", font=("Arial", 14)
     )
     avg_hourly_rate_label.grid(row=row, column=1, padx=(5, 10), pady=pad_y, sticky="e")
     row += 1
-    
+
     # 4. Label: Stundenlohn im Vorjahr :: Label: €
     ctk.CTkLabel(
         financial_frame, text="Stundenlohn im Vorjahr:", font=("Arial", 14, "bold")
     ).grid(row=row, column=0, padx=(10, 5), pady=pad_y, sticky="w")
-    
-    previous_rate_entry = ctk.CTkEntry(financial_frame, width=150, textvariable=previous_rate_var)
+
+    # Automatically calculate the previous rate if data is available
+    if 'Previous_Rate' in data_manager.data.columns and not data_manager.data['Previous_Rate'].empty:
+        previous_rate = data_manager.data['Previous_Rate'].iloc[0]
+        previous_rate_var.set(f"{previous_rate:.2f}")
+        previous_rate_entry = ctk.CTkLabel(financial_frame, width=150, textvariable=previous_rate_var)
+    else:
+        previous_rate_entry = ctk.CTkLabel(financial_frame, width=150, text="N/A")
     previous_rate_entry.grid(row=row, column=1, padx=(5, 10), pady=pad_y, sticky="e")
     row += 1
-    
+
     # 5. Label: Zeiten :: Label: alle Stunden zusammenaddiert
     ctk.CTkLabel(
         financial_frame, text="Zeiten:", font=("Arial", 14, "bold")
     ).grid(row=row, column=0, padx=(10, 5), pady=pad_y, sticky="w")
-    
+
     total_hours_label = ctk.CTkLabel(
         financial_frame, text=f"{total_hours:.2f} h", font=("Arial", 14)
     )
     total_hours_label.grid(row=row, column=1, padx=(5, 10), pady=pad_y, sticky="e")
     row += 1
-    
+
     # 6. Input: Stundenlohn zum Vergleichen :: Label: Stundenlohn zum vergleichen * 5.
     ctk.CTkLabel(
         financial_frame, text="Stundenlohn zum Vergleichen:", font=("Arial", 14, "bold")
     ).grid(row=row, column=0, padx=(10, 5), pady=pad_y, sticky="w")
-    
+
     comparison_frame = ctk.CTkFrame(financial_frame, fg_color="transparent")
     comparison_frame.grid(row=row, column=1, padx=(5, 10), pady=pad_y, sticky="e")
-    
+
     comparison_rate_entry = ctk.CTkEntry(comparison_frame, width=80, textvariable=comparison_rate_var)
     comparison_rate_entry.pack(side="left", padx=(0, 5))
     comparison_rate_entry.bind("<KeyRelease>", update_calculations)
-    
+
     ctk.CTkLabel(comparison_frame, text="€/h →", font=("Arial", 12)).pack(side="left", padx=(0, 5))
-    
+
     comparison_value_label = ctk.CTkLabel(comparison_frame, text="0.00 €", font=("Arial", 14))
     comparison_value_label.pack(side="left")
     row += 1
-    
+
     # 7. Label: Über/Unterdeckung :: Label: 1. minus 6.
     ctk.CTkLabel(
         financial_frame, text="Über/Unterdeckung:", font=("Arial", 14, "bold")
     ).grid(row=row, column=0, padx=(10, 5), pady=pad_y, sticky="w")
-    
+
     diff_amount_label = ctk.CTkLabel(
         financial_frame, text="0.00 €", font=("Arial", 14, "bold")
     )
     diff_amount_label.grid(row=row, column=1, padx=(5, 10), pady=pad_y, sticky="e")
-    
+
     # Add some spacing at the bottom
     ctk.CTkLabel(financial_frame, text="").grid(row=row+1, column=0, columnspan=2, pady=(20, 0))
-    
+
     return main_container
 
 def setup_fibu_tab(tab, data_manager):
