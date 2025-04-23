@@ -1,6 +1,46 @@
 import customtkinter as ctk
 import re
 
+# UI Constants for consistent styling across the application
+# Typography
+FONT_FAMILY = "Arial"
+TITLE_SIZE = 18
+HEADER_SIZE = 16
+NORMAL_SIZE = 14
+SMALL_SIZE = 12
+TINY_SIZE = 10
+
+TITLE_FONT = (FONT_FAMILY, TITLE_SIZE, "bold")
+HEADER_FONT = (FONT_FAMILY, HEADER_SIZE, "bold")
+NORMAL_FONT = (FONT_FAMILY, NORMAL_SIZE)
+BOLD_FONT = (FONT_FAMILY, NORMAL_SIZE, "bold")
+SMALL_FONT = (FONT_FAMILY, SMALL_SIZE)
+SMALL_BOLD_FONT = (FONT_FAMILY, SMALL_SIZE, "bold")
+TINY_FONT = (FONT_FAMILY, TINY_SIZE)
+
+# Colors
+HEADER_BG_COLOR = "#3a7ebf"
+HEADER_TEXT_COLOR = "white"
+SUCCESS_COLOR = "#4CAF50"
+ERROR_COLOR = "#F44336"
+NEUTRAL_COLOR = "#808080"
+SEPARATOR_COLOR = "gray"
+
+# Layout constants
+DEFAULT_PADX = 10
+DEFAULT_PADY = 10
+SECTION_PADX = 20
+SECTION_PADY = 20
+WIDGET_PADX = 5
+WIDGET_PADY = 5
+
+# Table column widths
+DATE_COL_WIDTH = 100
+CUSTOMER_COL_WIDTH = 200
+PROJECT_COL_WIDTH = 150
+DURATION_COL_WIDTH = 100
+INVOICED_COL_WIDTH = 80
+
 def format_date_string(row):
     """
     Helper function to extract and format date strings consistently across the application.
@@ -79,7 +119,7 @@ def setup_main_tab(tab, data_manager):
 
     # Create a title for the tab
     title_label = ctk.CTkLabel(
-        main_container, text="Jahresabschluss", font=("Arial", 18, "bold")
+        main_container, text="Jahresabschluss", font=TITLE_FONT
     )
     title_label.pack(pady=(10, 20))
 
@@ -114,7 +154,7 @@ def setup_main_tab(tab, data_manager):
             diff_amount = total_income - comparison_value
             diff_amount_label.configure(
                 text=f"{diff_amount:.2f} €",
-                text_color="#4CAF50" if diff_amount >= 0 else "#F44336"
+                text_color=SUCCESS_COLOR if diff_amount >= 0 else ERROR_COLOR
             )
         except (ValueError, ZeroDivisionError):
             # Handle invalid input
@@ -126,7 +166,7 @@ def setup_main_tab(tab, data_manager):
 
     # 1. Label: Honorar fakultiert :: Input: Gesamte Abrechnung des Jahres
     ctk.CTkLabel(
-        financial_frame, text="Honorar fakultiert:", font=("Arial", 14, "bold")
+        financial_frame, text="Honorar fakultiert:", font=HEADER_FONT
     ).grid(row=row, column=0, padx=(10, 5), pady=pad_y, sticky="w")
 
     income_entry = ctk.CTkEntry(financial_frame, width=150, textvariable=total_income_var)
@@ -136,7 +176,7 @@ def setup_main_tab(tab, data_manager):
 
     # 2. Label: Stunden Abgerechnet :: Input: €
     ctk.CTkLabel(
-        financial_frame, text="Stunden Abgerechnet:", font=("Arial", 14, "bold")
+        financial_frame, text="Stunden Abgerechnet:", font=HEADER_FONT
     ).grid(row=row, column=0, padx=(10, 5), pady=pad_y, sticky="w")
 
     hours_label = ctk.CTkEntry(
@@ -148,18 +188,18 @@ def setup_main_tab(tab, data_manager):
 
     # 3. Label: Durchschnittlicher Stundenlohn :: Label: Gesamter Betrag (1.) / echte Zeit
     ctk.CTkLabel(
-        financial_frame, text="Durchschnittlicher Stundenlohn:", font=("Arial", 14, "bold")
+        financial_frame, text="Durchschnittlicher Stundenlohn:", font=HEADER_FONT
     ).grid(row=row, column=0, padx=(10, 5), pady=pad_y, sticky="w")
 
     avg_hourly_rate_label = ctk.CTkLabel(
-        financial_frame, text="0,00 €/h", font=("Arial", 14)
+        financial_frame, text="0,00 €/h", font=NORMAL_FONT
     )
     avg_hourly_rate_label.grid(row=row, column=1, padx=(5, 10), pady=pad_y, sticky="e")
     row += 1
 
     # 4. Label: Stundenlohn im Vorjahr :: Label: €
     ctk.CTkLabel(
-        financial_frame, text="Stundenlohn im Vorjahr:", font=("Arial", 14, "bold")
+        financial_frame, text="Stundenlohn im Vorjahr:", font=HEADER_FONT
     ).grid(row=row, column=0, padx=(10, 5), pady=pad_y, sticky="w")
 
     # Automatically calculate the previous rate if data is available
@@ -174,18 +214,18 @@ def setup_main_tab(tab, data_manager):
 
     # 5. Label: Zeiten :: Label: alle Stunden zusammenaddiert
     ctk.CTkLabel(
-        financial_frame, text="Zeiten:", font=("Arial", 14, "bold")
+        financial_frame, text="Zeiten:", font=HEADER_FONT
     ).grid(row=row, column=0, padx=(10, 5), pady=pad_y, sticky="w")
 
     total_hours_label = ctk.CTkLabel(
-        financial_frame, text=f"{total_hours:.2f} h", font=("Arial", 14)
+        financial_frame, text=f"{total_hours:.2f} h", font=NORMAL_FONT
     )
     total_hours_label.grid(row=row, column=1, padx=(5, 10), pady=pad_y, sticky="e")
     row += 1
 
     # 6. Input: Stundenlohn zum Vergleichen :: Label: Stundenlohn zum vergleichen * 5.
     ctk.CTkLabel(
-        financial_frame, text="Stundenlohn zum Vergleichen:", font=("Arial", 14, "bold")
+        financial_frame, text="Stundenlohn zum Vergleichen:", font=HEADER_FONT
     ).grid(row=row, column=0, padx=(10, 5), pady=pad_y, sticky="w")
 
     comparison_frame = ctk.CTkFrame(financial_frame, fg_color="transparent")
@@ -195,19 +235,19 @@ def setup_main_tab(tab, data_manager):
     comparison_rate_entry.pack(side="left", padx=(0, 5))
     comparison_rate_entry.bind("<KeyRelease>", update_calculations)
 
-    ctk.CTkLabel(comparison_frame, text="€/h →", font=("Arial", 12)).pack(side="left", padx=(0, 5))
+    ctk.CTkLabel(comparison_frame, text="€/h →", font=SMALL_FONT).pack(side="left", padx=(0, 5))
 
-    comparison_value_label = ctk.CTkLabel(comparison_frame, text="0.00 €", font=("Arial", 14))
+    comparison_value_label = ctk.CTkLabel(comparison_frame, text="0.00 €", font=NORMAL_FONT)
     comparison_value_label.pack(side="left")
     row += 1
 
     # 7. Label: Über/Unterdeckung :: Label: 1. minus 6.
     ctk.CTkLabel(
-        financial_frame, text="Über/Unterdeckung:", font=("Arial", 14, "bold")
+        financial_frame, text="Über/Unterdeckung:", font=HEADER_FONT
     ).grid(row=row, column=0, padx=(10, 5), pady=pad_y, sticky="w")
 
     diff_amount_label = ctk.CTkLabel(
-        financial_frame, text="0.00 €", font=("Arial", 14, "bold")
+        financial_frame, text="0.00 €", font=BOLD_FONT
     )
     diff_amount_label.grid(row=row, column=1, padx=(5, 10), pady=pad_y, sticky="e")
 
@@ -231,7 +271,7 @@ def setup_team_tab(tab, data_manager, filtered_data=None, show_initial_data=Fals
     
     # Create a title for the tab
     title_label = ctk.CTkLabel(
-        team_container, text="Team Members Time Entries", font=("Arial", 18, "bold")
+        team_container, text="Team Members Time Entries", font=TITLE_FONT
     )
     title_label.pack(pady=(10, 20))
     
@@ -245,7 +285,7 @@ def setup_team_tab(tab, data_manager, filtered_data=None, show_initial_data=Fals
         no_data_label = ctk.CTkLabel(
             team_container,
             text="No team members found with current filter settings.",
-            font=("Arial", 14)
+            font=NORMAL_FONT
         )
         no_data_label.pack(pady=50)
         return team_container
@@ -281,15 +321,15 @@ def setup_team_tab(tab, data_manager, filtered_data=None, show_initial_data=Fals
         total_entries_all = len(filtered_data[filtered_data['Teammitglied'] == member])
         
         # Create a frame for the collapsible header
-        header_frame = ctk.CTkFrame(member_frame, fg_color="#3a7ebf", corner_radius=8)
+        header_frame = ctk.CTkFrame(member_frame, fg_color=HEADER_BG_COLOR, corner_radius=8)
         header_frame.pack(fill="x", padx=5, pady=5)
         
         # Add member name as clickable header
         member_header = ctk.CTkLabel(
             header_frame,
             text=f"Team Member: {member}",
-            font=("Arial", 16, "bold"),
-            text_color="white",
+            font=HEADER_FONT,
+            text_color=HEADER_TEXT_COLOR,
             cursor="hand2"  # Change cursor to hand when hovering
         )
         member_header.pack(side="left", fill="x", padx=10, pady=5, expand=True)
@@ -302,8 +342,8 @@ def setup_team_tab(tab, data_manager, filtered_data=None, show_initial_data=Fals
         stats_summary = ctk.CTkLabel(
             header_frame,
             text=entries_msg,
-            font=("Arial", 12),
-            text_color="white"
+            font=SMALL_FONT,
+            text_color=HEADER_TEXT_COLOR
         )
         stats_summary.pack(side="right", padx=10, pady=5)
         
@@ -348,7 +388,7 @@ def setup_team_tab(tab, data_manager, filtered_data=None, show_initial_data=Fals
         
         # Table headers - removed "Order" column
         headers = ["Date", "Customer", "Project", "Duration", "Invoiced"]
-        col_widths = [100, 200, 150, 100, 80]
+        col_widths = [DATE_COL_WIDTH, CUSTOMER_COL_WIDTH, PROJECT_COL_WIDTH, DURATION_COL_WIDTH, INVOICED_COL_WIDTH]
         
         # Converts column names to DataFrame column names
         column_map = {
@@ -416,14 +456,14 @@ def setup_team_tab(tab, data_manager, filtered_data=None, show_initial_data=Fals
                 
                 # Invoiced
                 invoiced_text = "Yes" if row.Abgerechnet else "No"
-                invoiced_color = "#4CAF50" if row.Abgerechnet else "#F44336"
+                invoiced_color = SUCCESS_COLOR if row.Abgerechnet else ERROR_COLOR
                 
                 ctk.CTkLabel(
                     entries_frame,
                     text=invoiced_text,
                     text_color=invoiced_color,
                     width=col_widths[4],
-                    font=("Arial", 12, "bold")
+                    font=BOLD_FONT
                 ).grid(row=k, column=4, padx=5, pady=2, sticky="w")
         
         # Create header labels with click functionality
@@ -431,7 +471,7 @@ def setup_team_tab(tab, data_manager, filtered_data=None, show_initial_data=Fals
             header_label = ctk.CTkLabel(
                 entries_frame,
                 text=header,
-                font=("Arial", 12, "bold"),
+                font=HEADER_FONT,
                 width=col_widths[j],
                 cursor="hand2"  # Hand cursor for clickability
             )
@@ -441,7 +481,7 @@ def setup_team_tab(tab, data_manager, filtered_data=None, show_initial_data=Fals
             sort_indicator = ctk.CTkLabel(
                 entries_frame,
                 text="▲",  # Up arrow
-                font=("Arial", 10),
+                font=TINY_FONT,
                 width=10
             )
             sort_indicator.grid(row=0, column=j, padx=(col_widths[j]-15, 0), pady=5, sticky="e")
@@ -473,7 +513,7 @@ def setup_team_tab(tab, data_manager, filtered_data=None, show_initial_data=Fals
                         widget.sort_indicator.grid()
         
         # Add a horizontal separator
-        separator = ctk.CTkFrame(entries_frame, height=1, fg_color="gray")
+        separator = ctk.CTkFrame(entries_frame, height=1, fg_color=SEPARATOR_COLOR)
         separator.grid(row=1, column=0, columnspan=len(headers), sticky="ew", padx=5, pady=2)
         
         # Sort entries by date (initial sort) - limited for performance
@@ -515,14 +555,14 @@ def setup_team_tab(tab, data_manager, filtered_data=None, show_initial_data=Fals
             
             # Invoiced
             invoiced_text = "Yes" if row.Abgerechnet else "No"
-            invoiced_color = "#4CAF50" if row.Abgerechnet else "#F44336"
+            invoiced_color = SUCCESS_COLOR if row.Abgerechnet else ERROR_COLOR
             
             ctk.CTkLabel(
                 entries_frame,
                 text=invoiced_text,
                 text_color=invoiced_color,
                 width=col_widths[4],
-                font=("Arial", 12, "bold")
+                font=BOLD_FONT
             ).grid(row=k, column=4, padx=5, pady=2, sticky="w")
         
     # Wenn show_initial_data aktiviert ist, öffne automatisch die erste Sektion
