@@ -104,6 +104,18 @@ function loadCsvData() {
         csvData.headers = headers.map(h => h.replace(/"/g, ''));
         csvData.rows = rows;
 
+        // Find indices for start and end date columns
+        const startDateIdx = csvData.headers.findIndex(header => 
+            header.toLowerCase().includes('start date'));
+        const endDateIdx = csvData.headers.findIndex(header => 
+            header.toLowerCase().includes('end date'));
+        
+        // Add a new "Bearbeitungsdatum" header if both date columns exist
+        const showCombinedDate = startDateIdx !== -1 && endDateIdx !== -1;
+        if (showCombinedDate) {
+            csvData.headers.push('Bearbeitungsdatum');
+        }
+
         // Render the data
         const appDiv = document.getElementById('app');
         
@@ -119,11 +131,16 @@ function loadCsvData() {
 
         // Create table headers
         const headerRow = document.createElement('tr');
-        headers.forEach(header => {
+        csvData.headers.forEach((header, index) => {
+            // Skip rendering the original date columns if we're showing the combined date
+            if (showCombinedDate && (index === startDateIdx || index === endDateIdx)) {
+                return;
+            }
+            
             const th = document.createElement('th');
             th.textContent = header.replace(/"/g, '');
             th.style.cursor = 'pointer';
-            th.addEventListener('click', () => sortTable(table, headers.indexOf(header)));
+            th.addEventListener('click', () => sortTable(table, index));
             headerRow.appendChild(th);
         });
         table.appendChild(headerRow);
@@ -131,11 +148,29 @@ function loadCsvData() {
         // Create table rows
         rows.forEach(row => {
             const tr = document.createElement('tr');
-            row.forEach(cell => {
+            
+            // Process regular cells
+            row.forEach((cell, index) => {
+                // Skip rendering the original date columns if we're showing the combined date
+                if (showCombinedDate && (index === startDateIdx || index === endDateIdx)) {
+                    return;
+                }
+                
                 const td = document.createElement('td');
                 td.textContent = cell.replace(/"/g, '');
                 tr.appendChild(td);
             });
+            
+            // Add the combined date cell if both date columns exist
+            if (showCombinedDate) {
+                const td = document.createElement('td');
+                // Use the start date as the bearbeitungsdatum since they should be the same day
+                if (row[startDateIdx]) {
+                    td.textContent = row[startDateIdx].replace(/"/g, '');
+                }
+                tr.appendChild(td);
+            }
+            
             table.appendChild(tr);
         });
 
