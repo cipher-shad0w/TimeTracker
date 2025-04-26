@@ -87,12 +87,10 @@ function setupFilterEvents() {
   const applyFiltersBtn = document.getElementById('apply-filters');
   const resetFiltersBtn = document.getElementById('reset-filters');
 
-  // Hide the apply button since we'll apply filters immediately
   if (applyFiltersBtn) {
     applyFiltersBtn.style.display = 'none';
   }
 
-  // Apply filters immediately when dropdown values change
   teamMemberFilter.addEventListener('change', () => {
     appState.filters.teamMember = teamMemberFilter.value;
     applyFilters();
@@ -217,7 +215,6 @@ function createTableRow(rowData, showCombinedDate, startDateIdx, endDateIdx) {
     const td = document.createElement('td');
     let cellContent = cell.replace(/"/g, '');
     
-    // Apply duration formatting for the duration column
     if (index === durationIdx) {
       cellContent = formatDurationToHHMM(cellContent);
     }
@@ -241,8 +238,8 @@ function populateFilterOptions() {
   
   if (!teamMemberFilter || !projectFilter) return;
   
-  const teamColIdx = findColumnIndex('team') !== -1 ? findColumnIndex('team') : 0; // Erste Spalte ist typischerweise "Teammitglied"
-  const projectColIdx = findColumnIndex('projekt') !== -1 ? findColumnIndex('projekt') : 2; // Projekte sind typischerweise in der dritten Spalte
+  const teamColIdx = findColumnIndex('team') !== -1 ? findColumnIndex('team') : 0;
+  const projectColIdx = findColumnIndex('projekt') !== -1 ? findColumnIndex('projekt') : 2;
   
   console.log('Team column index:', teamColIdx, 'Column name:', appState.csvData.headers[teamColIdx]);
   console.log('Project column index:', projectColIdx, 'Column name:', appState.csvData.headers[projectColIdx]);
@@ -306,33 +303,28 @@ function applyFilters() {
   const rows = table.querySelectorAll('tr');
   
   rows.forEach((row, index) => {
-    if (index === 0) return; // Skip header row
+    if (index === 0) return;
     
     const cells = Array.from(row.querySelectorAll('td'));
     if (cells.length === 0) return;
     
     let showRow = true;
     
-    // Filter nach Teammitglied
     if (teamMemberValue && teamColIdx !== -1 && teamColIdx < cells.length) {
       const cellValue = cells[teamColIdx].textContent.trim();
       showRow = showRow && (cellValue === teamMemberValue);
     }
     
-    // Filter nach Projekt
     if (projectValue && projectColIdx !== -1 && projectColIdx < cells.length) {
       const cellValue = cells[projectColIdx].textContent.trim();
       showRow = showRow && (cellValue === projectValue);
     }
     
-    // Suchfilter
     if (searchQuery) {
-      // Suche in allen Textzellen
       const matchesText = cells.some(cell => 
         cell.textContent.toLowerCase().includes(searchQuery)
       );
       
-      // Suche speziell in Notizen
       const matchesNotes = notesIdx !== -1 && cells[notesIdx] && 
                           cells[notesIdx].textContent.toLowerCase().includes(searchQuery);
       
@@ -359,7 +351,6 @@ function setupSearchFunction() {
 
 function searchTableContent(table, query) {
   if (!query) {
-    // Wenn keine Suchanfrage vorhanden ist, wende nur die aktuellen Filter an
     applyFilters();
     return;
   }
@@ -368,14 +359,13 @@ function searchTableContent(table, query) {
   const rows = table.querySelectorAll('tr');
   
   rows.forEach((row, index) => {
-    if (index === 0) return; // Skip header row
+    if (index === 0) return;
     
     const cells = Array.from(row.querySelectorAll('td'));
     const matchesText = cells.some(cell => 
       cell.textContent.toLowerCase().includes(lowerQuery)
     );
     
-    // Wir prüfen auch, ob Notizen vorhanden sind und diese den Suchbegriff enthalten
     const notesIdx = findColumnIndex('notiz');
     const matchesNotes = notesIdx !== -1 && cells[notesIdx] && 
                         cells[notesIdx].textContent.toLowerCase().includes(lowerQuery);
