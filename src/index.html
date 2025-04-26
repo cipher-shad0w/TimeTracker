@@ -6,26 +6,24 @@
     <title>Employee Times</title>
     <style>
         :root {
-            /* Gruvbox Dark Theme Farbpalette */
-            --color-bg0: #282828;           /* Hintergrund */
-            --color-bg1: #3c3836;           /* Leicht hellerer Hintergrund */
-            --color-bg2: #504945;           /* Noch hellerer Hintergrund */
-            --color-bg3: #665c54;           /* Hellster Hintergrund */
-            --color-fg0: #fbf1c7;           /* Helle Textfarbe */
-            --color-fg1: #ebdbb2;           /* Leicht dunklere Textfarbe */
-            --color-fg2: #d5c4a1;           /* Noch dunklere Textfarbe */
-            --color-fg3: #bdae93;           /* Dunkelste Textfarbe */
-            --color-red: #fb4934;           /* Rot */
-            --color-green: #b8bb26;         /* Grün */
-            --color-yellow: #fabd2f;        /* Gelb */
-            --color-blue: #83a598;          /* Blau */
-            --color-purple: #d3869b;        /* Lila */
-            --color-aqua: #8ec07c;          /* Aqua */
-            --color-orange: #fe8019;        /* Orange */
+            --color-bg0: #282828;           
+            --color-bg1: #3c3836;           
+            --color-bg2: #504945;           
+            --color-bg3: #665c54;           
+            --color-fg0: #fbf1c7;           
+            --color-fg1: #ebdbb2;           
+            --color-fg2: #d5c4a1;           
+            --color-fg3: #bdae93;           
+            --color-red: #fb4934;           
+            --color-green: #b8bb26;         
+            --color-yellow: #fabd2f;        
+            --color-blue: #83a598;          
+            --color-purple: #d3869b;        
+            --color-aqua: #8ec07c;          
+            --color-orange: #fe8019;        
             
-            /* Anwendungsspezifische Variablen */
             --color-primary: var(--color-green);
-            --color-primary-dark: #98971a;  /* Dunkleres Grün im Gruvbox Style */
+            --color-primary-dark: #98971a;  
             --color-primary-light: var(--color-aqua);
             --color-accent: var(--color-orange);
             --color-background: var(--color-bg0);
@@ -38,25 +36,26 @@
             --color-shadow: rgba(0, 0, 0, 0.3);
             --color-tab-selected: var(--color-green);
             --color-hover-highlight: rgba(255, 255, 255, 0.05);
+            --sidebar-width: 250px;
+            --sidebar-collapsed-width: 50px;
         }
         
-        /* Light Theme Colors */
         :root[data-theme="light"] {
-            --color-bg0: #fbf1c7;           /* Light background */
-            --color-bg1: #ebdbb2;           /* Slightly darker background */
-            --color-bg2: #d5c4a1;           /* Even darker background */
-            --color-bg3: #bdae93;           /* Darkest background */
-            --color-fg0: #282828;           /* Dark text color */
-            --color-fg1: #3c3836;           /* Slightly lighter text color */
-            --color-fg2: #504945;           /* Even lighter text color */
-            --color-fg3: #665c54;           /* Lightest text color */
-            --color-red: #9d0006;           /* Dark Red */
-            --color-green: #79740e;         /* Dark Green */
-            --color-yellow: #b57614;        /* Dark Yellow */
-            --color-blue: #076678;          /* Dark Blue */
-            --color-purple: #8f3f71;        /* Dark Purple */
-            --color-aqua: #427b58;          /* Dark Aqua */
-            --color-orange: #af3a03;        /* Dark Orange */
+            --color-bg0: #fbf1c7;           
+            --color-bg1: #ebdbb2;           
+            --color-bg2: #d5c4a1;           
+            --color-bg3: #bdae93;           
+            --color-fg0: #282828;           
+            --color-fg1: #3c3836;           
+            --color-fg2: #504945;           
+            --color-fg3: #665c54;           
+            --color-red: #9d0006;           
+            --color-green: #79740e;         
+            --color-yellow: #b57614;        
+            --color-blue: #076678;          
+            --color-purple: #8f3f71;        
+            --color-aqua: #427b58;          
+            --color-orange: #af3a03;        
             
             --color-primary: var(--color-green);
             --color-primary-dark: #98971a;
@@ -64,7 +63,6 @@
             --color-hover-highlight: rgba(0, 0, 0, 0.05);
         }
         
-        /* Theme Switch Styles */
         .theme-switch-wrapper {
             display: flex;
             align-items: center;
@@ -128,7 +126,6 @@
             background-color: var(--color-background);
         }
         
-        /* Header Styles */
         .app-header {
             background-color: var(--color-bg1);
             color: var(--color-text-light);
@@ -137,6 +134,7 @@
             box-shadow: 0 2px 5px var(--color-shadow);
             z-index: 100;
             border-bottom: 1px solid var(--color-border);
+            position: relative;
         }
         
         .app-header h1 {
@@ -146,31 +144,70 @@
             letter-spacing: 1px;
             color: var(--color-yellow);
         }
+
+        .burger-menu {
+            position: relative;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 18px; 
+            width: 22px; 
+            outline: none;
+            z-index: 101;
+            padding: 0;
+            margin: 12px auto 16px auto; 
+        }
+
+        .burger-menu span {
+            display: block;
+            height: 2px;
+            width: 100%;
+            background-color: var(--color-yellow);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
         
-        /* Main Container */
         .container {
             display: flex;
             flex: 1;
             overflow: hidden;
         }
 
-        /* Sidebar Styles */
         .sidebar {
-            width: 250px;
+            width: var(--sidebar-width);
             background-color: var(--color-background-sidebar);
             border-right: 1px solid var(--color-border);
-            padding: 20px;
             overflow-y: auto;
+            transition: width 0.3s ease;
+            display: flex;
+            flex-direction: column;
         }
-        
-        .sidebar h2 {
-            margin-top: 0;
-            padding-bottom: 10px;
+
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar.collapsed .sidebar-content {
+            display: none;
+        }
+
+        .sidebar.collapsed .burger-menu {
+            margin: 15px auto;
+        }
+
+        .sidebar-header {
+            padding: 0 10px;
             border-bottom: 1px solid var(--color-border);
-            color: var(--color-primary);
+        }
+
+        .sidebar-content {
+            padding: 20px;
+            flex: 1;
         }
         
-        /* Main Content Styles */
         .main-content {
             flex: 1;
             overflow-y: auto;
@@ -178,9 +215,15 @@
             display: flex;
             flex-direction: column;
             background-color: var(--color-background);
+            transition: margin-left 0.3s ease;
         }
         
-        /* Tab Navigation */
+        .sidebar h2 {
+            margin-top: 0;
+            padding-bottom: 10px;
+            color: var(--color-primary);
+        }
+        
         .tab-nav {
             display: flex;
             border-bottom: 1px solid var(--color-border);
@@ -210,7 +253,6 @@
             background-color: var(--color-hover-highlight);
         }
         
-        /* Tab Content */
         .tab-content {
             display: none;
             flex: 1;
@@ -220,7 +262,6 @@
             display: block;
         }
         
-        /* Table Styles */
         table {
             border-collapse: collapse;
             width: 100%;
@@ -250,7 +291,6 @@
             background-color: var(--color-hover-highlight);
         }
         
-        /* Search Input */
         .search-input {
             padding: 10px;
             margin-bottom: 15px;
@@ -268,7 +308,6 @@
             box-shadow: 0 0 0 2px rgba(184, 187, 38, 0.2);
         }
         
-        /* Styles für Filter-Optionen */
         .filter-group {
             margin-bottom: 16px;
         }
@@ -338,7 +377,6 @@
     </style>
 </head>
 <body>
-    <!-- Neuer ordentlicher Header -->
     <header class="app-header">
         <h1>Employee Times Visualization</h1>
         <div class="theme-switch-wrapper">
@@ -349,11 +387,17 @@
         </div>
     </header>
     
-    <!-- Container für den Rest der App -->
     <div class="container">
-        <div class="sidebar">
-            <h2>Einstellungen</h2>
-            <div id="sidebar-content">
+        <div id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <button id="burger-menu" class="burger-menu" aria-label="Toggle sidebar">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+            <div class="sidebar-content">
+                <h2>Einstellungen</h2>
                 <div class="filter-group">
                     <label for="team-member-filter" class="filter-label">Teammitglied</label>
                     <select id="team-member-filter" class="filter-select">

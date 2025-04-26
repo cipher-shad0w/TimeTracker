@@ -1,4 +1,3 @@
-// Mock browser globals for tests
 global.document = {
   addEventListener: jest.fn(),
   createElement: jest.fn(() => ({
@@ -36,5 +35,4 @@ global.localStorage = {
   setItem: jest.fn()
 };
 
-// Increase the default timeout for tests
 jest.setTimeout(10000);
