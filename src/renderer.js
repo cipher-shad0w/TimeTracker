@@ -237,26 +237,31 @@ function populateFilterOptions() {
   
   if (!teamMemberFilter || !projectFilter) return;
   
-  const teamColIdx = findColumnIndex('team');
-  const projectColIdx = findColumnIndex('project');
+  const teamColIdx = findColumnIndex('team') !== -1 ? findColumnIndex('team') : 0; // Erste Spalte ist typischerweise "Teammitglied"
+  const projectColIdx = findColumnIndex('projekt') !== -1 ? findColumnIndex('projekt') : 2; // Projekte sind typischerweise in der dritten Spalte
+  
+  console.log('Team column index:', teamColIdx, 'Column name:', appState.csvData.headers[teamColIdx]);
+  console.log('Project column index:', projectColIdx, 'Column name:', appState.csvData.headers[projectColIdx]);
   
   clearOptions(teamMemberFilter);
   clearOptions(projectFilter);
   
   if (teamColIdx !== -1) {
     const uniqueTeamMembers = extractUniqueValues(teamColIdx);
+    console.log('Unique team members:', uniqueTeamMembers);
     populateSelectOptions(teamMemberFilter, uniqueTeamMembers);
   }
   
   if (projectColIdx !== -1) {
     const uniqueProjects = extractUniqueValues(projectColIdx);
+    console.log('Unique projects:', uniqueProjects);
     populateSelectOptions(projectFilter, uniqueProjects);
   }
 }
 
 function findColumnIndex(keyword) {
   return appState.csvData.headers.findIndex(header => 
-    header.toLowerCase().includes(keyword));
+    header.toLowerCase().includes(keyword.toLowerCase()));
 }
 
 function clearOptions(selectElement) {
@@ -289,8 +294,8 @@ function applyFilters() {
   const teamMemberValue = appState.filters.teamMember;
   const projectValue = appState.filters.project;
 
-  const teamColIdx = findColumnIndex('team');
-  const projectColIdx = findColumnIndex('project');
+  const teamColIdx = findColumnIndex('team') !== -1 ? findColumnIndex('team') : 0;
+  const projectColIdx = findColumnIndex('projekt') !== -1 ? findColumnIndex('projekt') : 2;
 
   const rows = table.querySelectorAll('tr');
   
