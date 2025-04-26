@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Times</title>
+    <title>Time Tracker</title>
     <style>
         :root {
             --color-bg0: #282828;           
@@ -378,7 +378,7 @@
 </head>
 <body>
     <header class="app-header">
-        <h1>Employee Times Visualization</h1>
+        <h1>Zeiten</h1>
         <div class="theme-switch-wrapper">
             <label class="theme-switch" for="checkbox">
                 <input type="checkbox" id="checkbox" />
@@ -397,7 +397,12 @@
                 </button>
             </div>
             <div class="sidebar-content">
-                <h2>Einstellungen</h2>
+                
+                <div class="filter-group">
+                    <label for="sidebar-search" class="filter-label">Suche</label>
+                    <input type="text" id="sidebar-search" class="search-input" placeholder="Mitarbeiter oder Notizen suchen...">
+                </div>
+                
                 <div class="filter-group">
                     <label for="team-member-filter" class="filter-label">Teammitglied</label>
                     <select id="team-member-filter" class="filter-select">
@@ -413,8 +418,7 @@
                 </div>
                 
                 <div class="filter-group">
-                    <button id="apply-filters" class="filter-button">Filter anwenden</button>
-                    <button id="reset-filters" class="filter-button filter-reset">Zurücksetzen</button>
+                    <button id="reset-filters" class="filter-button filter-reset">Filter Zurücksetzen</button>
                 </div>
             </div>
         </div>

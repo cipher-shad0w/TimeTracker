@@ -23,6 +23,7 @@ function initializeApp() {
   setupSidebarToggle();
   loadCsvData();
   setupFilterEvents();
+  setupSearchFunction();
 }
 
 function setupThemeSwitch() {
@@ -86,8 +87,18 @@ function setupFilterEvents() {
   const applyFiltersBtn = document.getElementById('apply-filters');
   const resetFiltersBtn = document.getElementById('reset-filters');
 
-  applyFiltersBtn.addEventListener('click', () => {
+  // Hide the apply button since we'll apply filters immediately
+  if (applyFiltersBtn) {
+    applyFiltersBtn.style.display = 'none';
+  }
+
+  // Apply filters immediately when dropdown values change
+  teamMemberFilter.addEventListener('change', () => {
     appState.filters.teamMember = teamMemberFilter.value;
+    applyFilters();
+  });
+
+  projectFilter.addEventListener('change', () => {
     appState.filters.project = projectFilter.value;
     applyFilters();
   });
@@ -158,9 +169,6 @@ function renderDataTable(dateColumns) {
   
   appDiv.innerHTML = '';
   
-  const searchInput = createSearchInput();
-  appDiv.appendChild(searchInput);
-
   const table = document.createElement('table');
   
   const headerRow = createTableHeaders(showCombinedDate, startDateIdx, endDateIdx);
@@ -172,18 +180,6 @@ function renderDataTable(dateColumns) {
   });
 
   appDiv.appendChild(table);
-
-  searchInput.addEventListener('input', () => {
-    filterTable(table, searchInput.value);
-  });
-}
-
-function createSearchInput() {
-  const searchInput = document.createElement('input');
-  searchInput.type = 'text';
-  searchInput.placeholder = 'Suche nach Mitarbeitern...';
-  searchInput.classList.add('search-input');
-  return searchInput;
 }
 
 function createTableHeaders(showCombinedDate, startDateIdx, endDateIdx) {
@@ -301,41 +297,70 @@ function applyFilters() {
 
   const teamMemberValue = appState.filters.teamMember;
   const projectValue = appState.filters.project;
+  const searchQuery = document.getElementById('sidebar-search')?.value.trim().toLowerCase() || '';
 
   const teamColIdx = findColumnIndex('team') !== -1 ? findColumnIndex('team') : 0;
   const projectColIdx = findColumnIndex('projekt') !== -1 ? findColumnIndex('projekt') : 2;
+  const notesIdx = findColumnIndex('notiz');
 
   const rows = table.querySelectorAll('tr');
   
   rows.forEach((row, index) => {
-    if (index === 0) return;
+    if (index === 0) return; // Skip header row
     
     const cells = Array.from(row.querySelectorAll('td'));
     if (cells.length === 0) return;
     
     let showRow = true;
     
+    // Filter nach Teammitglied
     if (teamMemberValue && teamColIdx !== -1 && teamColIdx < cells.length) {
       const cellValue = cells[teamColIdx].textContent.trim();
       showRow = showRow && (cellValue === teamMemberValue);
     }
     
+    // Filter nach Projekt
     if (projectValue && projectColIdx !== -1 && projectColIdx < cells.length) {
       const cellValue = cells[projectColIdx].textContent.trim();
       showRow = showRow && (cellValue === projectValue);
+    }
+    
+    // Suchfilter
+    if (searchQuery) {
+      // Suche in allen Textzellen
+      const matchesText = cells.some(cell => 
+        cell.textContent.toLowerCase().includes(searchQuery)
+      );
+      
+      // Suche speziell in Notizen
+      const matchesNotes = notesIdx !== -1 && cells[notesIdx] && 
+                          cells[notesIdx].textContent.toLowerCase().includes(searchQuery);
+      
+      showRow = showRow && (matchesText || matchesNotes);
     }
     
     row.style.display = showRow ? '' : 'none';
   });
 }
 
-function filterTable(table, query) {
+function setupSearchFunction() {
+  const sidebarSearchInput = document.getElementById('sidebar-search');
+  if (!sidebarSearchInput) return;
+  
+  sidebarSearchInput.addEventListener('input', (event) => {
+    const query = event.target.value.trim();
+    const table = document.querySelector('table');
+    
+    if (table) {
+      searchTableContent(table, query);
+    }
+  });
+}
+
+function searchTableContent(table, query) {
   if (!query) {
-    const rows = table.querySelectorAll('tr');
-    rows.forEach((row, index) => {
-      if (index === 0) return;
-      row.style.display = '';
-    });
+    // Wenn keine Suchanfrage vorhanden ist, wende nur die aktuellen Filter an
+    applyFilters();
     return;
   }
 
@@ -343,14 +368,19 @@ function filterTable(table, query) {
   const rows = table.querySelectorAll('tr');
   
   rows.forEach((row, index) => {
-    if (index === 0) return;
+    if (index === 0) return; // Skip header row
     
     const cells = Array.from(row.querySelectorAll('td'));
-    const matches = cells.some(cell => 
+    const matchesText = cells.some(cell => 
       cell.textContent.toLowerCase().includes(lowerQuery)
     );
     
-    row.style.display = matches ? '' : 'none';
+    // Wir prüfen auch, ob Notizen vorhanden sind und diese den Suchbegriff enthalten
+    const notesIdx = findColumnIndex('notiz');
+    const matchesNotes = notesIdx !== -1 && cells[notesIdx] && 
+                        cells[notesIdx].textContent.toLowerCase().includes(lowerQuery);
+    
+    row.style.display = (matchesText || matchesNotes) ? '' : 'none';
   });
 }
 
