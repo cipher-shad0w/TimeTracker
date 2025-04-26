@@ -211,6 +211,7 @@ function createTableHeaders(showCombinedDate, startDateIdx, endDateIdx) {
 
 function createTableRow(rowData, showCombinedDate, startDateIdx, endDateIdx) {
   const tr = document.createElement('tr');
+  const durationIdx = findDurationColumnIndex();
   
   rowData.forEach((cell, index) => {
     if (showCombinedDate && (index === startDateIdx || index === endDateIdx)) {
@@ -218,7 +219,14 @@ function createTableRow(rowData, showCombinedDate, startDateIdx, endDateIdx) {
     }
     
     const td = document.createElement('td');
-    td.textContent = cell.replace(/"/g, '');
+    let cellContent = cell.replace(/"/g, '');
+    
+    // Apply duration formatting for the duration column
+    if (index === durationIdx) {
+      cellContent = formatDurationToHHMM(cellContent);
+    }
+    
+    td.textContent = cellContent;
     tr.appendChild(td);
   });
   
@@ -376,4 +384,22 @@ function sortTable(table, columnIndex) {
   });
   
   sortedRows.forEach(row => table.appendChild(row));
+}
+
+function formatDurationToHHMM(durationString) {
+  const regex = /(\d+)h\s*(\d+)m(?:\s*\d+s)?/;
+  const match = durationString.match(regex);
+  
+  if (match) {
+    const hours = match[1].padStart(2, '0');
+    const minutes = match[2].padStart(2, '0');
+    return `${hours}:${minutes}`;
+  }
+  
+  return durationString;
+}
+
+function findDurationColumnIndex() {
+  return appState.csvData.headers.findIndex(header => 
+    header.toLowerCase().includes('dauer') || header.toLowerCase().includes('duration'));
 }
