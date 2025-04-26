@@ -25,7 +25,7 @@
 
 ## <span id="about"></span> :dart: About
 
-Time Tracker is a modern Python desktop application for tracking, analyzing, and visualizing work time. It is designed for professionals and freelancers to manage project efforts, client work, and personal productivity with powerful filtering and reporting features.
+Time Tracker is a modern Electron-based desktop application for tracking, analyzing, and visualizing work time. It is designed for professionals and freelancers to manage project efforts, client work, and personal productivity with powerful filtering and reporting features.
 
 ---
 
@@ -35,25 +35,27 @@ Time Tracker is a modern Python desktop application for tracking, analyzing, and
 - Filter by client, project, team member, year, month, and billing status
 - Visualize efforts by day, week, month, and year
 - Export filtered data to CSV or Excel
-- Modern, intuitive UI with CustomTkinter
+- Modern, intuitive UI with Electron
 
 ---
 
 ## <span id="technologies"></span> :rocket: Technologies
 
-- **Programming Language:** Python 3.9+
+- **Programming Language:** JavaScript/Node.js
+- **Main Framework:** Electron
 - **Main Libraries:**
-  - `pandas`: Data analysis and manipulation
-  - `numpy`: Numerical operations
-  - `customtkinter`: Modern desktop UI
-  - `matplotlib`: Data visualization
+  - `electron`: Cross-platform desktop apps with JavaScript
+  - `chart.js`: Data visualization
+  - `papaparse`: CSV parsing and manipulation
+  - `jest`: Testing framework
 
 ---
 
 ## <span id="requirements"></span> :white_check_mark: Requirements
 
 - [Git](https://git-scm.com) (for cloning the repository)
-- Python 3.9 or higher
+- [Node.js](https://nodejs.org/) 14.0 or higher
+- npm (comes with Node.js)
 
 ---
 
@@ -67,7 +69,7 @@ Time Tracker is a modern Python desktop application for tracking, analyzing, and
 
 2. **Install dependencies:**
    ```
-   pip install -r requirements.txt
+   npm install
    ```
 
 3. **Prepare your data:**
@@ -75,7 +77,7 @@ Time Tracker is a modern Python desktop application for tracking, analyzing, and
 
 4. **Start the application:**
    ```
-   python main.py
+   npm start
    ```
 
 ---
@@ -104,30 +106,36 @@ The CSV file should contain columns like:
 
 ```
 LICENSE
-main.py
 README.md
-requirements.txt
+CHANGELOG.md
+CONTRIBUTING.md
+jest.config.js
+package.json
 
 data/
-    time.csv
+    example_csv_time.csv
 src/
-    data_manager.py
-    tabs.py
-    ui.py
+    index.html
+    main.js
+    preload.js
+    renderer.js
 tests/
-    run_tests.py
-    test_charts.py
-    test_data_manager.py
-    test_integration.py
-    test_tabs.py
-    test_ui.py
+    setup.js
+    e2e/
+        app.test.js
+    unit/
+        main.test.js
+        renderer-functions.test.js
+        renderer.test.js
 ```
 
-- `main.py`: Application entry point
-- `src/`: Source code (UI, data manager, tabs)
-- `data/`: Place your `time.csv` here
-- `tests/`: Automated tests
-- `requirements.txt`: Python dependencies
+- `src/main.js`: Main process entry point
+- `src/renderer.js`: Renderer process handling UI logic
+- `src/preload.js`: Preload script for secure context bridge
+- `src/index.html`: Main application HTML
+- `data/`: Place your time tracking CSV data here
+- `tests/`: Automated tests with Jest
+- `package.json`: Project dependencies and scripts
 
 ---
 
