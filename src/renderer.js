@@ -141,6 +141,7 @@ function processCsvData(csvContent) {
   renderDataTable(dateColumns);
   
   populateFilterOptions();
+  calculateTeamMemberTimeStatistics();
 }
 
 function findDateColumns() {
@@ -206,20 +207,49 @@ function createTableHeaders(showCombinedDate, startDateIdx, endDateIdx) {
 function createTableRow(rowData, showCombinedDate, startDateIdx, endDateIdx) {
   const tr = document.createElement('tr');
   const durationIdx = findDurationColumnIndex();
+  const billedColIdx = findColumnIndex('abgerechnet');
+  
+  // Store the mapping from original column indices to visible column indices
+  const columnMapping = {};
+  let visibleIndex = 0;
   
   rowData.forEach((cell, index) => {
     if (showCombinedDate && (index === startDateIdx || index === endDateIdx)) {
       return;
     }
     
+    // Map the original index to the visible index
+    columnMapping[index] = visibleIndex++;
+    
     const td = document.createElement('td');
     let cellContent = cell.replace(/"/g, '');
     
+    // Special handling for duration column
     if (index === durationIdx) {
       cellContent = formatDurationToHHMM(cellContent);
     }
     
-    td.textContent = cellContent;
+    // Special handling for billed status column
+    if (index === billedColIdx) {
+      const billedStatus = cellContent.trim().toLowerCase();
+      const isBilled = (billedStatus === 'ja' || billedStatus === 'yes' || billedStatus === 'true' || billedStatus === '1');
+      
+      if (isBilled) {
+        td.textContent = 'Abgerechnet';
+        td.style.color = 'var(--color-green)';
+        td.style.fontWeight = 'bold';
+      } else {
+        td.textContent = 'Nicht Abgerechnet';
+        td.style.color = 'var(--color-red)';
+        td.style.fontWeight = 'bold';
+      }
+    } else {
+      td.textContent = cellContent;
+    }
+    
+    // Store the original column index in a data attribute
+    td.setAttribute('data-original-col', index);
+    
     tr.appendChild(td);
   });
   
@@ -312,12 +342,12 @@ function applyFilters() {
     
     if (teamMemberValue && teamColIdx !== -1 && teamColIdx < cells.length) {
       const cellValue = cells[teamColIdx].textContent.trim();
-      showRow = showRow && (cellValue === teamMemberValue);
+          showRow = showRow && (cellValue === teamMemberValue);
     }
     
     if (projectValue && projectColIdx !== -1 && projectColIdx < cells.length) {
       const cellValue = cells[projectColIdx].textContent.trim();
-      showRow = showRow && (cellValue === projectValue);
+          showRow = showRow && (cellValue === projectValue);
     }
     
     if (searchQuery) {
@@ -332,7 +362,7 @@ function applyFilters() {
     }
     
     row.style.display = showRow ? '' : 'none';
-  });
+  });  
 }
 
 function setupSearchFunction() {
@@ -384,6 +414,7 @@ function sortTable(table, columnIndex) {
   headers.forEach(header => header.removeAttribute('data-sort'));
   
   currentHeader.setAttribute('data-sort', ascending ? 'asc' : 'desc');
+  currentHeader.classList.add(ascending ? 'sorted-asc' : 'sorted-desc');
   
   const rowsArray = Array.from(table.querySelectorAll('tr')).slice(1);
   
@@ -422,4 +453,214 @@ function formatDurationToHHMM(durationString) {
 function findDurationColumnIndex() {
   return appState.csvData.headers.findIndex(header => 
     header.toLowerCase().includes('dauer') || header.toLowerCase().includes('duration'));
+}
+
+function calculateTeamMemberTimeStatistics() {
+  const teamColIdx = findColumnIndex('team') !== -1 ? findColumnIndex('team') : 0;
+  const billedColIdx = findColumnIndex('abgerechnet') !== -1 ? findColumnIndex('abgerechnet') : -1;
+  const durationColIdx = findDurationColumnIndex();
+  
+  if (durationColIdx === -1) return;
+  
+  // Get all unique team members
+  const teamMembers = extractUniqueValues(teamColIdx);
+  
+  // Create a stats object for each team member
+  const teamStats = {};
+  
+  // Initialize with empty stats for each team member
+  teamMembers.forEach(member => {
+    teamStats[member] = {
+      billedTime: 0,
+      unbilledTime: 0,
+      totalTime: 0
+    };
+  });
+  
+  // Add an "All" category for total stats
+  teamStats['__total__'] = {
+    billedTime: 0,
+    unbilledTime: 0,
+    totalTime: 0
+  };
+  
+  // Filter rows based on current project filter
+  const projectValue = appState.filters.project;
+  const projectColIdx = findColumnIndex('projekt') !== -1 ? findColumnIndex('projekt') : 2;
+  
+  appState.csvData.rows.forEach(row => {
+    // Skip if row doesn't match project filter
+    if (projectValue && projectColIdx !== -1 && row[projectColIdx] && 
+        row[projectColIdx].replace(/"/g, '').trim() !== projectValue) {
+      return;
+    }
+    
+    // Get team member name
+    const teamMemberName = row[teamColIdx] ? row[teamColIdx].replace(/"/g, '').trim() : 'Unknown';
+    
+    // Calculate duration in minutes
+    const durationStr = row[durationColIdx]?.replace(/"/g, '') || '';
+    const durationMinutes = parseDurationToMinutes(durationStr);
+    
+    if (durationMinutes > 0) {
+      // Check if billed or not
+      let isBilled = false;
+      
+      if (billedColIdx !== -1 && row[billedColIdx]) {
+        const billedStatus = row[billedColIdx].replace(/"/g, '').trim().toLowerCase();
+        isBilled = (billedStatus === 'ja' || billedStatus === 'yes' || billedStatus === 'true' || billedStatus === '1');
+      }
+      
+      // Update stats for specific team member
+      if (teamStats[teamMemberName]) {
+        if (isBilled) {
+          teamStats[teamMemberName].billedTime += durationMinutes;
+        } else {
+          teamStats[teamMemberName].unbilledTime += durationMinutes;
+        }
+        teamStats[teamMemberName].totalTime += durationMinutes;
+      }
+      
+      // Update total stats
+      if (isBilled) {
+        teamStats['__total__'].billedTime += durationMinutes;
+      } else {
+        teamStats['__total__'].unbilledTime += durationMinutes;
+      }
+      teamStats['__total__'].totalTime += durationMinutes;
+    }
+  });
+  
+  // Update the UI with calculated stats
+  updateTeamStatsTable(teamStats);
+}
+
+function updateTeamStatsTable(teamStats) {
+  const tableBody = document.querySelector('#team-stats-table tbody');
+  if (!tableBody) return;
+  
+  // Clear existing rows
+  tableBody.innerHTML = '';
+  
+  // Add event listeners to table headers for sorting
+  const tableHeaders = document.querySelectorAll('#team-stats-table th');
+  tableHeaders.forEach((header, index) => {
+    header.style.cursor = 'pointer';
+    header.addEventListener('click', () => {
+      sortTeamStatsTable(index);
+    });
+  });
+  
+  // Get all team members (excluding the total)
+  const teamMembers = Object.keys(teamStats).filter(key => key !== '__total__').sort();
+  
+  // Add rows for each team member
+  teamMembers.forEach(member => {
+    const stats = teamStats[member];
+    const row = document.createElement('tr');
+    
+    // Team member name
+    const nameCell = document.createElement('td');
+    nameCell.textContent = member;
+    nameCell.className = 'team-name';
+    row.appendChild(nameCell);
+    
+    // Unbilled time
+    const unbilledCell = document.createElement('td');
+    unbilledCell.textContent = formatMinutesToHHMM(stats.unbilledTime);
+    unbilledCell.className = 'unbilled-time';
+    unbilledCell.setAttribute('data-value', stats.unbilledTime);
+    row.appendChild(unbilledCell);
+    
+    // Billed time
+    const billedCell = document.createElement('td');
+    billedCell.textContent = formatMinutesToHHMM(stats.billedTime);
+    billedCell.className = 'billed-time';
+    billedCell.setAttribute('data-value', stats.billedTime);
+    row.appendChild(billedCell);
+    
+    // Total time
+    const totalCell = document.createElement('td');
+    totalCell.textContent = formatMinutesToHHMM(stats.totalTime);
+    totalCell.className = 'total-time';
+    totalCell.setAttribute('data-value', stats.totalTime);
+    row.appendChild(totalCell);
+    
+    tableBody.appendChild(row);
+  });
+  
+  // Add total row if there's more than one team member
+  if (teamMembers.length > 1) {
+    const totalStats = teamStats['__total__'];
+    const totalRow = document.createElement('tr');
+    totalRow.className = 'total-row';
+    
+    // Total label
+    const labelCell = document.createElement('td');
+    labelCell.textContent = 'Gesamt';
+    labelCell.style.fontWeight = 'bold';
+    totalRow.appendChild(labelCell);
+    
+    // Total unbilled time
+    const totalUnbilledCell = document.createElement('td');
+    totalUnbilledCell.textContent = formatMinutesToHHMM(totalStats.unbilledTime);
+    totalUnbilledCell.className = 'unbilled-time';
+    totalUnbilledCell.style.fontWeight = 'bold';
+    totalUnbilledCell.setAttribute('data-value', totalStats.unbilledTime);
+    totalRow.appendChild(totalUnbilledCell);
+    
+    // Total billed time
+    const totalBilledCell = document.createElement('td');
+    totalBilledCell.textContent = formatMinutesToHHMM(totalStats.billedTime);
+    totalBilledCell.className = 'billed-time';
+    totalBilledCell.style.fontWeight = 'bold';
+    totalBilledCell.setAttribute('data-value', totalStats.billedTime);
+    totalRow.appendChild(totalBilledCell);
+    
+    // Grand total time
+    const grandTotalCell = document.createElement('td');
+    grandTotalCell.textContent = formatMinutesToHHMM(totalStats.totalTime);
+    grandTotalCell.className = 'total-time';
+    grandTotalCell.style.fontWeight = 'bold';
+    grandTotalCell.setAttribute('data-value', totalStats.totalTime);
+    totalRow.appendChild(grandTotalCell);
+    
+    tableBody.appendChild(totalRow);
+  }
+}
+
+function updateTeamMemberName(teamMemberValue) {
+  const element = document.getElementById('summary-team-member');
+  if (element) {
+    element.textContent = teamMemberValue || 'Alle Teammitglieder';
+  }
+}
+
+function parseDurationToMinutes(durationStr) {
+  let totalMinutes = 0;
+  
+  const hoursMatch = durationStr.match(/(\d+)h/);
+  if (hoursMatch) {
+    totalMinutes += parseInt(hoursMatch[1], 10) * 60;
+  }
+  
+  const minutesMatch = durationStr.match(/(\d+)m/);
+  if (minutesMatch) {
+    totalMinutes += parseInt(minutesMatch[1], 10);
+  }
+  
+  // Seconds are rounded to the nearest minute
+  const secondsMatch = durationStr.match(/(\d+)s/);
+  if (secondsMatch) {
+    totalMinutes += Math.round(parseInt(secondsMatch[1], 10) / 60);
+  }
+  
+  return totalMinutes;
+}
+
+function formatMinutesToHHMM(minutes) {
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  
+  return `${String(hours).padStart(2, '0')}:${String(remainingMinutes).padStart(2, '0')}`;
 }
