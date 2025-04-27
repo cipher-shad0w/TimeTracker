@@ -546,8 +546,14 @@ tr:hover {
 }
 
 .editable-cell {
-    visibility: hidden;
-}
-.editable-cell:focus {
-    visibility: visible;
+    background-color: var(--color-bg2);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    padding: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 50%;
+    margin: 0 auto;
+    display: block;
+    text-align: center;
 }
