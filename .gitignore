@@ -31,3 +31,4 @@ dist/
 
 # Ignore example CSV file
 example_csv_time.csv
+/macOS
