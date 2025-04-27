@@ -1,6 +1,14 @@
+/**
+ * TimeTracker - Main renderer process
+ * Handles CSV data loading, UI setup and user interactions
+ */
+
 const fs = require('fs');
 const path = require('path');
 
+/**
+ * Application state management
+ */
 const appState = {
   csvData: {
     headers: [],
@@ -13,18 +21,25 @@ const appState = {
   sidebarCollapsed: false
 };
 
+// Initialize the application when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', () => {
   initializeApp();
 });
 
+/**
+ * Main application initialization function
+ * Sets up all UI elements and loads data
+ */
 function initializeApp() {
   setupTabs();
-  //setupThemeSwitch();
   setupSidebarToggle();
   setupEditableCells();
   loadCsvData();
   setupFilterEvents();
   setupSearchFunction();
+  
+  // Uncomment to enable theme switching
+  // setupThemeSwitch();
 }
 
 function setupThemeSwitch() {
