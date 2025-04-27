@@ -8,7 +8,7 @@
     </head>
     <body>
         <header class="app-header">
-            <h1>Zeiten</h1>
+            <h1>Time Tracker</h1>
             <div class="theme-switch-wrapper">
                 <label class="theme-switch" for="checkbox">
                     <input type="checkbox" id="checkbox" />
@@ -21,11 +21,11 @@
             <div id="sidebar" class="sidebar">
                 <div class="sidebar-header">
                     <button id="burger-menu" class="burger-menu" aria-label="Toggle sidebar">
-                        <span></span>
-                        <span></span>
-                        <span></span>
+                        <i class="fa-solid fa-bars"></i>
                     </button>
                 </div>
+
+
                 <div class="sidebar-content">
                     
                     <div class="filter-group">
@@ -51,9 +51,10 @@
                         <button id="reset-filters" class="filter-button filter-reset">Filter Zurücksetzen</button>
                     </div>
 
-                    <div id="settings-icon" class="settings-icon">
-                        <i class="fa-solid fa-gear"></i>
-                    </div>
+                </div>
+                
+                <div id="settings-icon" class="settings-icon">
+                    <i class="fa-solid fa-gear"></i>
                 </div>
             </div>
             
@@ -102,5 +103,6 @@
         </div>
         
         <script src="renderer.js"></script>
+        <script src="https://kit.fontawesome.com/d1d754f7fa.js" crossorigin="anonymous"></script>
     </body>
 </html>
