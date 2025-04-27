@@ -155,51 +155,85 @@ body {
     color: var(--color-primary);
 }
 
-.burger-menu {
+.burger-menu,
+.info-icon,
+.settings-icon {
     position: absolute;
-    background-color: var(--color-bg2);
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 40px;
-    width: 40px;
-    outline: none;
-    z-index: 101;
-    padding: 0;
-    margin: 12px auto 16px auto;
-    border-radius: 50%;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    left: 50%;
+    bottom: 70px;
+    left: 15%;
     transform: translateX(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 10000px;
+    display: flex;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    background-color: var(--color-bg2);
 }
 
-.burger-menu i {
-    font-size: 24px;
+.info-text-button,
+.settings-text-button {
     color: var(--color-text-secondary);
 }
 
-.settings-icon {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 40px;
-    height: 40px;
-    background-color: var(--color-bg2);
-    border-radius: 50%;
-    display: flex;
+.burger-menu {
+    top: 20px;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 10;
 }
 
+.info-icon p,
+.settings-icon p {
+    margin-left: 10px
+}
+
+.burger-menu i,
+.info-icon i,
 .settings-icon i {
     font-size: 24px;
     color: var(--color-text-secondary);
+}
+
+.info-icon {
+    bottom: 70px;
+    margin: auto
+}
+
+.settings-icon {
+    bottom: 20px;
+    margin: auto;
+}
+
+.info-icon,
+.settings-icon{
+    width: 130px;
+    left: 50%;
+    align-items: center;
+    justify-content: left;
+}
+
+.sidebar.collapsed .burger-menu,
+.sidebar.collapsed .info-icon,
+.sidebar.collapsed .settings-icon{
+    transition: all 0.3s ease;
+    left: 50%
+}
+
+.sidebar.collapsed .info-icon,
+.sidebar.collapsed .settings-icon{
+    width: 40px
+}
+
+.sidebar .info-icon .info-text-button,
+.sidebar .settings-icon .settings-text-button {
+    display: none;
+    margin-right: 10px;
+}
+
+.sidebar:not(.collapsed) .info-icon .info-text-button,
+.sidebar:not(.collapsed) .settings-icon .settings-text-button {
+    display: inline;
 }
 
 /* =============================================
@@ -509,4 +543,11 @@ tr:hover {
 
 .time-stat.total .stat-value {
     color: var(--color-green);
+}
+
+.editable-cell {
+    visibility: hidden;
+}
+.editable-cell:focus {
+    visibility: visible;
 }
