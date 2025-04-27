@@ -1,6 +1,42 @@
-/* =============================================
-   1. CSS VARIABLES & THEMING
-   ============================================= */
+/**
+ * TimeTracker - CSS Stylesheet
+ * 
+ * TABLE OF CONTENTS:
+ * 
+ * 1. Color System and Theming
+ *    1.1 Color Variables (Dark Theme)
+ *    1.2 Light Theme
+ * 
+ * 2. Base and Layouts
+ *    2.1 General Styles
+ *    2.2 Container and Content
+ * 
+ * 3. Main Components
+ *    3.1 App Header
+ *    3.2 Sidebar
+ *    3.3 Theme Switch
+ *    3.4 Tab Navigation
+ * 
+ * 4. Data Displays
+ *    4.1 Generic Tables
+ *    4.2 Time Statistics Tables
+ * 
+ * 5. Form Elements
+ *    5.1 Text Inputs
+ *    5.2 Select Dropdowns
+ *    5.3 Buttons
+ *    5.4 Form Groups
+ * 
+ * 6. Data Components
+ *    6.1 Time Summary Cards
+ *    6.2 Editable Elements
+ */
+
+/* ==========================================================================
+   1. Color System and Theming
+   ========================================================================== */
+
+/* 1.1 Color Variables (Dark Theme) */
 :root {
     /* Base Gruvbox Dark Colors */
     --color-bg0: #282828;           
@@ -40,7 +76,7 @@
     --sidebar-collapsed-width: 50px;
 }
 
-/* Light Theme Variables */
+/* 1.2 Light Theme */
 :root[data-theme="light"] {
     --color-bg0: #fbf1c7;           
     --color-bg1: #ebdbb2;           
@@ -64,9 +100,11 @@
     --color-hover-highlight: rgba(0, 0, 0, 0.05);
 }
 
-/* =============================================
-   2. GLOBAL & LAYOUT STYLES
-   ============================================= */
+/* ==========================================================================
+   2. Base and Layouts
+   ========================================================================== */
+
+/* 2.1 General Styles */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -78,6 +116,7 @@ body {
     background-color: var(--color-background);
 }
 
+/* 2.2 Container and Content */
 .container {
     display: flex;
     flex: 1;
@@ -94,9 +133,11 @@ body {
     transition: margin-left 0.3s ease;
 }
 
-/* =============================================
-   3. HEADER STYLES
-   ============================================= */
+/* ==========================================================================
+   3. Main Components
+   ========================================================================== */
+
+/* 3.1 App Header */
 .app-header {
     background-color: var(--color-bg1);
     color: var(--color-text-light);
@@ -116,9 +157,8 @@ body {
     color: var(--color-yellow);
 }
 
-/* =============================================
-   4. SIDEBAR STYLES
-   ============================================= */
+/* 3.2 Sidebar */
+/* Sidebar Structure */
 .sidebar {
     width: var(--sidebar-width);
     background-color: var(--color-background-sidebar);
@@ -155,6 +195,7 @@ body {
     color: var(--color-primary);
 }
 
+/* Sidebar Controls */
 .burger-menu,
 .info-icon,
 .settings-icon {
@@ -236,9 +277,7 @@ body {
     display: inline;
 }
 
-/* =============================================
-   5. THEME SWITCH
-   ============================================= */
+/* 3.3 Theme Switch */
 .theme-switch-wrapper {
     display: flex;
     align-items: center;
@@ -291,9 +330,7 @@ input:checked + .slider:before {
     background-color: var(--color-blue);
 }
 
-/* =============================================
-   6. TABS NAVIGATION
-   ============================================= */
+/* 3.4 Tab Navigation */
 .tab-nav {
     display: flex;
     border-bottom: 1px solid var(--color-border);
@@ -332,9 +369,11 @@ input:checked + .slider:before {
     display: block;
 }
 
-/* =============================================
-   7. TABLE STYLES
-   ============================================= */
+/* ==========================================================================
+   4. Data Displays
+   ========================================================================== */
+
+/* 4.1 Generic Tables */
 table {
     border-collapse: collapse;
     width: 100%;
@@ -364,7 +403,7 @@ tr:hover {
     background-color: var(--color-hover-highlight);
 }
 
-/* Time stats specific tables */
+/* 4.2 Time Statistics Tables */
 .time-stats-table {
     width: 100%;
     margin-bottom: 20px;
@@ -406,10 +445,11 @@ tr:hover {
     font-weight: bold;
 }
 
-/* =============================================
-   8. FORM CONTROLS
-   ============================================= */
-/* Text inputs */
+/* ==========================================================================
+   5. Form Elements
+   ========================================================================== */
+
+/* 5.1 Text Inputs */
 .search-input {
     padding: 10px;
     margin-bottom: 15px;
@@ -427,7 +467,7 @@ tr:hover {
     box-shadow: 0 0 0 2px rgba(184, 187, 38, 0.2);
 }
 
-/* Select inputs */
+/* 5.2 Select Dropdowns */
 .filter-select {
     width: 100%;
     padding: 8px 10px;
@@ -455,7 +495,7 @@ tr:hover {
     color: var(--color-text-primary);
 }
 
-/* Buttons */
+/* 5.3 Buttons */
 .filter-button {
     background-color: var(--color-primary);
     color: var(--color-bg0);
@@ -484,9 +524,7 @@ tr:hover {
     color: var(--color-text-primary);
 }
 
-/* =============================================
-   9. FILTER COMPONENTS
-   ============================================= */
+/* 5.4 Form Groups */
 .filter-group {
     margin-bottom: 16px;
 }
@@ -499,9 +537,11 @@ tr:hover {
     font-size: 14px;
 }
 
-/* =============================================
-   10. TIME SUMMARY COMPONENTS
-   ============================================= */
+/* ==========================================================================
+   6. Data Components
+   ========================================================================== */
+
+/* 6.1 Time Summary Cards */
 .time-summary-container {
     margin-bottom: 20px;
 }
@@ -545,6 +585,7 @@ tr:hover {
     color: var(--color-green);
 }
 
+/* 6.2 Editable Elements */
 .editable-cell {
     background-color: var(--color-bg2);
     color: var(--color-text-primary);
