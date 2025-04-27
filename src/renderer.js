@@ -169,6 +169,7 @@ function renderDataTable(dateColumns) {
   appDiv.innerHTML = '';
   
   const table = document.createElement('table');
+  table.classList.add('filterable-table');
   
   const headerRow = createTableHeaders(showCombinedDate, startDateIdx, endDateIdx);
   table.appendChild(headerRow);
@@ -319,17 +320,50 @@ function populateSelectOptions(selectElement, values) {
 }
 
 function applyFilters() {
-  const table = document.querySelector('table');
-  if (!table) return;
+  const tables = document.querySelectorAll('.filterable-table');
+  if (!tables.length) return;
 
   const teamMemberValue = appState.filters.teamMember;
   const projectValue = appState.filters.project;
   const searchQuery = document.getElementById('sidebar-search')?.value.trim().toLowerCase() || '';
 
+    tables.forEach(table => {
+    // Check table type and apply appropriate filter logic
+    if (table.id === 'team-stats-table') {
+      filterStatsTable(table, teamMemberValue, searchQuery);
+    } else {
+      filterDataTable(table, teamMemberValue, projectValue, searchQuery);
+    }
+  });
+}
+
+function filterStatsTable(table, teamMemberValue, searchQuery) {
+  const rows = table.querySelectorAll('tbody tr');
+  
+  rows.forEach(row => {
+    const teamMemberCell = row.querySelector('td:first-child');
+    if (!teamMemberCell) return;
+    
+    const teamMemberName = teamMemberCell.textContent.trim();
+    let showRow = true;
+    
+    // Apply team member filter
+    if (teamMemberValue) {
+      showRow = teamMemberName === teamMemberValue;
+    }
+    
+    // Apply search filter
+    if (showRow && searchQuery) {
+      showRow = row.textContent.toLowerCase().includes(searchQuery);
+    }
+    
+    row.style.display = showRow ? '' : 'none';
+  });
+}
+
+function filterDataTable(table, teamMemberValue, projectValue, searchQuery) {
   const teamColIdx = findColumnIndex('team') !== -1 ? findColumnIndex('team') : 0;
   const projectColIdx = findColumnIndex('projekt') !== -1 ? findColumnIndex('projekt') : 2;
-  const notesIdx = findColumnIndex('notiz');
-
   const rows = table.querySelectorAll('tr');
   
   rows.forEach((row, index) => {
@@ -354,11 +388,7 @@ function applyFilters() {
       const matchesText = cells.some(cell => 
         cell.textContent.toLowerCase().includes(searchQuery)
       );
-      
-      const matchesNotes = notesIdx !== -1 && cells[notesIdx] && 
-                          cells[notesIdx].textContent.toLowerCase().includes(searchQuery);
-      
-      showRow = showRow && (matchesText || matchesNotes);
+      showRow = showRow && (matchesText);
     }
     
     row.style.display = showRow ? '' : 'none';

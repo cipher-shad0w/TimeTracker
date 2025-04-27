@@ -451,3 +451,30 @@ tr:hover {
 .time-stat.total .stat-value {
     color: var(--color-green);
 }
+
+
+
+.settings-icon {
+    position: absolute;
+    bottom: 10px;
+    left: 5px;
+    width: 40px;
+    height: 40px;
+    background-color: #ccc;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.settings-icon i {
+    font-size: 24px;
+    color: #888;
+}
+
+.sidebar {
+    position: relative;
+    transition: width 0.3s ease;
+}
