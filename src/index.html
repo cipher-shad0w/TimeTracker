@@ -1,102 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Tracker</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <header class="app-header">
-        <h1>Zeiten</h1>
-        <div class="theme-switch-wrapper">
-            <label class="theme-switch" for="checkbox">
-                <input type="checkbox" id="checkbox" />
-                <div class="slider"></div>
-            </label>
-        </div>
-    </header>
-    
-    <div class="container">
-        <div id="sidebar" class="sidebar">
-            <div class="sidebar-header">
-                <button id="burger-menu" class="burger-menu" aria-label="Toggle sidebar">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Time Tracker</title>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+    <body>
+        <header class="app-header">
+            <h1>Zeiten</h1>
+            <div class="theme-switch-wrapper">
+                <label class="theme-switch" for="checkbox">
+                    <input type="checkbox" id="checkbox" />
+                    <div class="slider"></div>
+                </label>
             </div>
-            <div class="sidebar-content">
-                
-                <div class="filter-group">
-                    <label for="sidebar-search" class="filter-label">Suche</label>
-                    <input type="text" id="sidebar-search" class="search-input" placeholder="Mitarbeiter oder Notizen suchen...">
+        </header>
+        
+        <div class="container">
+            <div id="sidebar" class="sidebar">
+                <div class="sidebar-header">
+                    <button id="burger-menu" class="burger-menu" aria-label="Toggle sidebar">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                </div>
+                <div class="sidebar-content">
+                    
+                    <div class="filter-group">
+                        <label for="sidebar-search" class="filter-label">Suche</label>
+                        <input type="text" id="sidebar-search" class="search-input" placeholder="Mitarbeiter oder Notizen suchen...">
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="team-member-filter" class="filter-label">Teammitglied</label>
+                        <select id="team-member-filter" class="filter-select">
+                            <option value="">Alle Teammitglieder</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="project-filter" class="filter-label">Projekt</label>
+                        <select id="project-filter" class="filter-select">
+                            <option value="">Alle Projekte</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <button id="reset-filters" class="filter-button filter-reset">Filter Zurücksetzen</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="main-content">
+                <div class="tab-nav">
+                    <button class="tab-button active" data-tab="tab1">Übersicht</button>
+                    <button class="tab-button" data-tab="tab2">Statistiken</button>
+                    <button class="tab-button" data-tab="tab3">Berichte</button>
+                    <button class="tab-button" data-tab="tab4">Einstellungen</button>
                 </div>
                 
-                <div class="filter-group">
-                    <label for="team-member-filter" class="filter-label">Teammitglied</label>
-                    <select id="team-member-filter" class="filter-select">
-                        <option value="">Alle Teammitglieder</option>
-                    </select>
+                <div class="tab-content active" id="tab1">
+                    <div class="time-summary-container">
+                        <table class="time-stats-table" id="team-stats-table">
+                            <thead>
+                                <tr>
+                                    <th>Teammitglied</th>
+                                    <th>Nicht Abgerechnet</th>
+                                    <th>Abgerechnet</th>
+                                    <th>Gesamt</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Team member statistics will be generated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="app"></div>
                 </div>
                 
-                <div class="filter-group">
-                    <label for="project-filter" class="filter-label">Projekt</label>
-                    <select id="project-filter" class="filter-select">
-                        <option value="">Alle Projekte</option>
-                    </select>
+                <div class="tab-content" id="tab2">
+                    <h2>Statistiken</h2>
+                    <p>Hier werden später Statistiken angezeigt.</p>
                 </div>
                 
-                <div class="filter-group">
-                    <button id="reset-filters" class="filter-button filter-reset">Filter Zurücksetzen</button>
+                <div class="tab-content" id="tab3">
+                    <h2>Berichte</h2>
+                    <p>Hier werden später Berichte angezeigt.</p>
+                </div>
+                
+                <div class="tab-content" id="tab4">
+                    <h2>Einstellungen</h2>
+                    <p>Hier können globale Einstellungen konfiguriert werden.</p>
                 </div>
             </div>
         </div>
         
-        <div class="main-content">
-            <div class="tab-nav">
-                <button class="tab-button active" data-tab="tab1">Übersicht</button>
-                <button class="tab-button" data-tab="tab2">Statistiken</button>
-                <button class="tab-button" data-tab="tab3">Berichte</button>
-                <button class="tab-button" data-tab="tab4">Einstellungen</button>
-            </div>
-            
-            <div class="tab-content active" id="tab1">
-                <div class="time-summary-container">
-                    <table class="time-stats-table" id="team-stats-table">
-                        <thead>
-                            <tr>
-                                <th>Teammitglied</th>
-                                <th>Nicht Abgerechnet</th>
-                                <th>Abgerechnet</th>
-                                <th>Gesamt</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Team member statistics will be generated by JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-                <div id="app"></div>
-            </div>
-            
-            <div class="tab-content" id="tab2">
-                <h2>Statistiken</h2>
-                <p>Hier werden später Statistiken angezeigt.</p>
-            </div>
-            
-            <div class="tab-content" id="tab3">
-                <h2>Berichte</h2>
-                <p>Hier werden später Berichte angezeigt.</p>
-            </div>
-            
-            <div class="tab-content" id="tab4">
-                <h2>Einstellungen</h2>
-                <p>Hier können globale Einstellungen konfiguriert werden.</p>
-            </div>
-        </div>
-    </div>
-    
-    <script src="renderer.js"></script>
-</body>
+        <script src="renderer.js"></script>
+    </body>
 </html>
