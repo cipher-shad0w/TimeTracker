@@ -9,12 +9,14 @@
     <body>
         <header class="app-header">
             <h1>Time Tracker</h1>
+            
             <div class="theme-switch-wrapper">
                 <label class="theme-switch" for="checkbox">
                     <input type="checkbox" id="checkbox" />
                     <div class="slider"></div>
                 </label>
             </div>
+
         </header>
         
         <div class="container">
@@ -60,13 +62,24 @@
             
             <div class="main-content">
                 <div class="tab-nav">
-                    <button class="tab-button active" data-tab="tab1">Übersicht</button>
-                    <button class="tab-button" data-tab="tab2">Statistiken</button>
-                    <button class="tab-button" data-tab="tab3">Berichte</button>
-                    <button class="tab-button" data-tab="tab4">Einstellungen</button>
+                    <button class="tab-button active" data-tab="tab1">Time Tracking</button>
+                    <button class="tab-button" data-tab="tab2">Dashboard</button>
+                    <button class="tab-button" data-tab="tab3">Team Übersicht</button>
+                    <button class="tab-button" data-tab="tab4">Fibu</button>
+                    <button class="tab-button" data-tab="tab5">Hauptblatt</button>
                 </div>
                 
                 <div class="tab-content active" id="tab1">
+                    <h2>Time Tracking</h2>
+                    <p>Hier wird spaeter die Zeit gemessen</p>
+                </div>
+                    
+                <div class="tab-content" id="tab2">
+                    <h2>Dashboard</h2>
+                    <p>Hier werden später die Dashboard-Statistiken angezeigt.</p>
+                </div>
+
+                <div class="tab-content" id="tab3">
                     <div class="time-summary-container">
                         <table class="time-stats-table filterable-table" id="team-stats-table">
                             <thead>
@@ -84,24 +97,19 @@
                     </div>
                     <div id="app"></div>
                 </div>
-                
-                <div class="tab-content" id="tab2">
-                    <h2>Statistiken</h2>
-                    <p>Hier werden später Statistiken angezeigt.</p>
-                </div>
-                
-                <div class="tab-content" id="tab3">
-                    <h2>Berichte</h2>
-                    <p>Hier werden später Berichte angezeigt.</p>
-                </div>
-                
+
                 <div class="tab-content" id="tab4">
-                    <h2>Einstellungen</h2>
-                    <p>Hier können globale Einstellungen konfiguriert werden.</p>
+                    <h2>Fibu</h2>
+                    <p>Hier werden später die Fibu-Statistiken angezeigt.</p>
+                </div>
+
+                <div class="tab-content" id="tab5">
+                    <h2>Hauptblatt</h2>
+                    <p>Hier werden später die Hauptblatt-Statistiken angezeigt.</p>
                 </div>
             </div>
         </div>
-        
+
         <script src="renderer.js"></script>
         <script src="https://kit.fontawesome.com/d1d754f7fa.js" crossorigin="anonymous"></script>
     </body>
