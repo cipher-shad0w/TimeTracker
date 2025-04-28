@@ -119,6 +119,15 @@ src/
     main.js
     preload.js
     renderer.js
+    styles.css
+    __pycache__/
+        data_manager.cpython-310.pyc
+        data_manager.cpython-39.pyc
+        tabs.cpython-310.pyc
+        tabs.cpython-39.pyc
+        ui.cpython-310.pyc
+        ui.cpython-313.pyc
+        ui.cpython-39.pyc
 tests/
     setup.js
     e2e/
@@ -133,6 +142,8 @@ tests/
 - `src/renderer.js`: Renderer process handling UI logic
 - `src/preload.js`: Preload script for secure context bridge
 - `src/index.html`: Main application HTML
+- `src/styles.css`: Application styles and theme
+- `src/__pycache__/`: Python compiled files for data management and UI
 - `data/`: Place your time tracking CSV data here
 - `tests/`: Automated tests with Jest
 - `package.json`: Project dependencies and scripts
