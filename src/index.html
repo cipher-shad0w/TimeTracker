@@ -93,7 +93,109 @@
                 
                 <div class="tab-content active" id="tab1">
                     <h2>Time Tracking</h2>
-                    <p>Hier wird spaeter die Zeit gemessen</p>
+                    <form id="time-tracker-form" class="glass-effect">
+                        <!-- Zeile 1: Teammitglied und Projekt (zwei wichtigste Auswahlfelder) -->
+                        <div class="form-row">
+                            <div class="filter-group">
+                                <label for="team-member-input" class="filter-label">Teammitglied</label>
+                                <select id="team-member-input" class="filter-select">
+                                    <option value="">Teammitglied auswählen</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label for="project-input" class="filter-label">Projekte</label>
+                                <select id="project-input" class="filter-select">
+                                    <option value="">Projekt auswählen</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Zeile 2: Kunde und Auftrag (zusammengehörend) -->
+                        <div class="form-row">
+                            <div class="filter-group">
+                                <label for="client-input" class="filter-label">Kunden</label>
+                                <select id="client-input" class="filter-select">
+                                    <option value="">Kunde auswählen</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label for="assignment-input" class="filter-label">Auftrag</label>
+                                <input type="text" id="assignment-input" class="search-input" placeholder="z.B. 04.2025">
+                            </div>
+                        </div>
+                        
+                        <!-- Zeile 3: Dauer und Abgerechnet-Status -->
+                        <div class="form-row">
+                            <div class="filter-group">
+                                <label for="duration-input" class="filter-label">Dauer (HH:MM)</label>
+                                <input type="text" id="duration-input" class="search-input" placeholder="z.B. 01:30">
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label for="billed-input" class="filter-label">Abgerechnet</label>
+                                <select id="billed-input" class="filter-select">
+                                    <option value="false">Nein</option>
+                                    <option value="true">Ja</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Zeile 4: Notiz (volle Breite) -->
+                        <div class="form-row">
+                            <div class="filter-group full-width">
+                                <label for="note-input" class="filter-label">Notiz</label>
+                                <input type="text" id="note-input" class="search-input" placeholder="Beschreibung der Tätigkeit">
+                            </div>
+                        </div>
+                        
+                        <!-- Versteckte Felder: Datum wird automatisch gesetzt -->
+                        <input type="hidden" id="start-date-input">
+                        <input type="hidden" id="end-date-input">
+                        <input type="hidden" id="entry-id-input" value="">
+                        
+                        <!-- Aktionen: Timer und Hinzufügen-Button -->
+                        <div class="form-actions">
+                            <button type="button" id="start-timer-button" class="timer-button">
+                                <i class="fa-solid fa-play"></i> Zeitmessung starten
+                            </button>
+                            <button type="button" id="stop-timer-button" class="timer-button timer-stop" style="display: none;">
+                                <i class="fa-solid fa-stop"></i> Zeitmessung stoppen
+                            </button>
+                            <button type="button" id="add-time-button" class="filter-button">Eintrag hinzufügen</button>
+                            <div id="timer-display" class="timer-display">00:00:00</div>
+                        </div>
+                    </form>
+
+                    <div id="time-tracker-summary">
+                        <h3>Erfasste Zeiten</h3>
+                        <div class="time-table-actions">
+                            <button id="sort-date-button" class="action-button">
+                                <i class="fa-solid fa-calendar"></i> Nach Datum sortieren
+                            </button>
+                            <button id="filter-unbilled-button" class="action-button">
+                                <i class="fa-solid fa-filter"></i> Nur nicht abgerechnete
+                            </button>
+                        </div>
+                        <table id="time-tracker-table" class="time-stats-table">
+                            <thead>
+                                <tr>
+                                    <th>Teammitglied</th>
+                                    <th>Kunden</th>
+                                    <th>Projekte</th>
+                                    <th>Auftrag</th>
+                                    <th>Datum</th>
+                                    <th>Dauer</th>
+                                    <th>Abgerechnet</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Tracked time entries will be dynamically added here -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                     
                 <div class="tab-content" id="tab2">
@@ -123,7 +225,7 @@
                 <div class="tab-content" id="tab4">
                     <h2>Fibu</h2>
                     <table class="fibu-table">
-                        <thead>
+                        <thead></thead>
                             <tr>
                                 <th>Monate</th>
                                 <th>Januar</th>
@@ -153,12 +255,9 @@
                                 <td><input type="text" class="editable-cell" placeholder=""></td>
                                 <td><input type="text" class="editable-cell" placeholder=""></td>
                                 <td><input type="text" class="editable-cell" placeholder=""></td>
-                                <td><input type="text" class="editable-cell" placeholder=""></td>
-                                <td><input type="text" class="editable-cell" placeholder=""></td>
                             </tr>
                             <tr>
                                 <td>Abgerechnete Stunden</td>
-                                <td><input type="text" class="editable-cell" placeholder=""></td>
                                 <td><input type="text" class="editable-cell" placeholder=""></td>
                                 <td><input type="text" class="editable-cell" placeholder=""></td>
                                 <td><input type="text" class="editable-cell" placeholder=""></td>
@@ -200,6 +299,7 @@
                                 <td></td>
                                 <td></td>
                                 <td></td>
+                                <td></td>
                             </tr>
                             <tr>
                                 <td>Genaues Honorar</td>
@@ -215,9 +315,14 @@
                                 <td></td>
                                 <td></td>
                                 <td></td>
+                                <td></td>
+                                <td></td>
                             </tr>
                             <tr>
                                 <td>Abweichungen</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
                                 <td></td>
                                 <td></td>
                                 <td></td>

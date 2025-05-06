@@ -24,6 +24,7 @@ const appState = {
 // Initialize the application when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', () => {
   initializeApp();
+  setupTimeTracker(); // Initialize the time tracker functionality
 });
 
 /**
@@ -1067,4 +1068,306 @@ function parseDate(dateStr) {
   }
   
   return null; // Couldn't parse date
+}
+
+function setupTimeTracker() {
+  // Alle Form-Elemente
+  const teamMemberInput = document.getElementById('team-member-input');
+  const clientInput = document.getElementById('client-input');
+  const projectInput = document.getElementById('project-input');
+  const assignmentInput = document.getElementById('assignment-input');
+  const noteInput = document.getElementById('note-input');
+  const startDateInput = document.getElementById('start-date-input');
+  const endDateInput = document.getElementById('end-date-input');
+  const durationInput = document.getElementById('duration-input');
+  const billedInput = document.getElementById('billed-input');
+  const entryIdInput = document.getElementById('entry-id-input');
+  
+  // Buttons
+  const addTimeButton = document.getElementById('add-time-button');
+  const startTimerButton = document.getElementById('start-timer-button');
+  const stopTimerButton = document.getElementById('stop-timer-button');
+  const sortDateButton = document.getElementById('sort-date-button');
+  const filterUnbilledButton = document.getElementById('filter-unbilled-button');
+  
+  // Timer Display
+  const timerDisplay = document.getElementById('timer-display');
+  
+  // Tabelle
+  const timeTrackerTable = document.getElementById('time-tracker-table').querySelector('tbody');
+  
+  // Timer-Variablen
+  let timerInterval = null;
+  let timerStartTime = 0;
+  let timerSeconds = 0;
+  
+  // Einträge in Local Storage speichern/laden
+  const timeEntries = loadTimeEntries();
+  
+  // Alle Dropdown-Optionen aus der CSV-Datei laden
+  populateDropdownFromCSV(teamMemberInput, 0);  // Teammitglied (erste Spalte)
+  populateDropdownFromCSV(clientInput, 1);      // Kunden (zweite Spalte)
+  populateDropdownFromCSV(projectInput, 2);     // Projekte (dritte Spalte)
+  
+  // Timer-Funktionalität
+  startTimerButton.addEventListener('click', () => {
+    if (timerInterval !== null) return;
+    
+    timerStartTime = Date.now() - (timerSeconds * 1000);
+    timerInterval = setInterval(updateTimer, 1000);
+    startTimerButton.style.display = 'none';
+    stopTimerButton.style.display = 'inline-block';
+  });
+  
+  stopTimerButton.addEventListener('click', () => {
+    if (timerInterval === null) return;
+    
+    clearInterval(timerInterval);
+    timerInterval = null;
+    
+    // Zeitmessung in das Dauer-Feld übertragen
+    const hours = Math.floor(timerSeconds / 3600);
+    const minutes = Math.floor((timerSeconds % 3600) / 60);
+    durationInput.value = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    
+    // UI zurücksetzen
+    startTimerButton.style.display = 'inline-block';
+    stopTimerButton.style.display = 'none';
+    timerSeconds = 0;
+    timerDisplay.textContent = '00:00:00';
+  });
+  
+  // Hinzufügen-Button
+  addTimeButton.addEventListener('click', () => {
+    // Pflichtfelder prüfen
+    if (!teamMemberInput.value || !projectInput.value || !durationInput.value) {
+      alert('Bitte füllen Sie mindestens die Felder Teammitglied, Projekt und Dauer aus.');
+      return;
+    }
+    
+    // Aktuelles Datum automatisch setzen
+    const today = new Date().toISOString().split('T')[0];
+    startDateInput.value = today;
+    endDateInput.value = today;
+    
+    // Daten sammeln
+    const entryData = {
+      id: entryIdInput.value || generateUniqueId(),
+      teamMember: teamMemberInput.value,
+      client: clientInput.value,
+      project: projectInput.value,
+      assignment: assignmentInput.value,
+      note: noteInput.value,
+      startDate: today, // Automatisch heutiges Datum verwenden
+      endDate: today,   // Automatisch heutiges Datum verwenden
+      duration: durationInput.value,
+      billed: billedInput.value === 'true'
+    };
+    
+    // Neuen Eintrag erstellen oder bestehenden aktualisieren
+    if (entryIdInput.value) {
+      updateTimeEntry(entryData);
+    } else {
+      addNewTimeEntry(entryData);
+    }
+    
+    // Formular zurücksetzen
+    resetForm();
+    
+    // Tabelle aktualisieren
+    renderTimeEntries();
+  });
+  
+  // Sortieren und Filtern
+  sortDateButton.addEventListener('click', () => {
+    timeEntries.sort((a, b) => {
+      return new Date(b.startDate) - new Date(a.startDate);
+    });
+    renderTimeEntries();
+  });
+  
+  filterUnbilledButton.addEventListener('click', () => {
+    filterUnbilledButton.classList.toggle('active');
+    renderTimeEntries();
+  });
+  
+  // Erste Anzeige der Tabelle mit allen Einträgen
+  renderTimeEntries();
+  
+  // Timer aktualisieren
+  function updateTimer() {
+    const elapsedSeconds = Math.floor((Date.now() - timerStartTime) / 1000);
+    timerSeconds = elapsedSeconds;
+    
+    const hours = Math.floor(elapsedSeconds / 3600);
+    const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+    const seconds = elapsedSeconds % 60;
+    
+    timerDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  }
+  
+  // Helper-Funktionen für die Zeiterfassung
+  function populateDropdownFromCSV(selectElement, columnIndex) {
+    if (!selectElement || columnIndex === undefined) return;
+    
+    const values = extractUniqueValues(columnIndex);
+    populateSelectOptions(selectElement, values);
+  }
+  
+  function addNewTimeEntry(entryData) {
+    timeEntries.push(entryData);
+    saveTimeEntries();
+  }
+  
+  function updateTimeEntry(entryData) {
+    const index = timeEntries.findIndex(entry => entry.id === entryData.id);
+    if (index !== -1) {
+      timeEntries[index] = entryData;
+      saveTimeEntries();
+    }
+  }
+  
+  function deleteTimeEntry(id) {
+    const index = timeEntries.findIndex(entry => entry.id === id);
+    if (index !== -1) {
+      timeEntries.splice(index, 1);
+      saveTimeEntries();
+      renderTimeEntries();
+    }
+  }
+  
+  function renderTimeEntries() {
+    // Tabelle leeren
+    timeTrackerTable.innerHTML = '';
+    
+    // Einträge filtern wenn "Nur nicht abgerechnete" aktiv ist
+    let filteredEntries = timeEntries;
+    if (filterUnbilledButton.classList.contains('active')) {
+      filteredEntries = timeEntries.filter(entry => !entry.billed);
+    }
+    
+    // Einträge zur Tabelle hinzufügen
+    filteredEntries.forEach(entry => {
+      const row = document.createElement('tr');
+      
+      // Zellen erstellen
+      const teamMemberCell = document.createElement('td');
+      teamMemberCell.textContent = entry.teamMember;
+      
+      const clientCell = document.createElement('td');
+      clientCell.textContent = entry.client;
+      
+      const projectCell = document.createElement('td');
+      projectCell.textContent = entry.project;
+      
+      const assignmentCell = document.createElement('td');
+      assignmentCell.textContent = entry.assignment;
+      
+      const dateCell = document.createElement('td');
+      dateCell.textContent = formatDate(entry.startDate);
+      
+      const durationCell = document.createElement('td');
+      durationCell.textContent = entry.duration;
+      
+      const billedCell = document.createElement('td');
+      if (entry.billed) {
+        billedCell.textContent = 'Ja';
+        billedCell.style.color = 'var(--color-green)';
+      } else {
+        billedCell.textContent = 'Nein';
+        billedCell.style.color = 'var(--color-red)';
+      }
+      
+      // Aktionen-Zelle
+      const actionsCell = document.createElement('td');
+      actionsCell.className = 'action-cell';
+      
+      // Bearbeiten-Button
+      const editButton = document.createElement('button');
+      editButton.className = 'edit-button';
+      editButton.innerHTML = '<i class="fa-solid fa-pen"></i>';
+      editButton.addEventListener('click', () => editEntry(entry.id));
+      
+      // Löschen-Button
+      const deleteButton = document.createElement('button');
+      deleteButton.className = 'delete-button';
+      deleteButton.innerHTML = '<i class="fa-solid fa-trash"></i>';
+      deleteButton.addEventListener('click', () => {
+        if (confirm('Sind Sie sicher, dass Sie diesen Eintrag löschen möchten?')) {
+          deleteTimeEntry(entry.id);
+        }
+      });
+      
+      actionsCell.appendChild(editButton);
+      actionsCell.appendChild(deleteButton);
+      
+      // Alles zur Zeile hinzufügen
+      row.appendChild(teamMemberCell);
+      row.appendChild(clientCell);
+      row.appendChild(projectCell);
+      row.appendChild(assignmentCell);
+      row.appendChild(dateCell);
+      row.appendChild(durationCell);
+      row.appendChild(billedCell);
+      row.appendChild(actionsCell);
+      
+      timeTrackerTable.appendChild(row);
+    });
+  }
+  
+  function editEntry(id) {
+    const entry = timeEntries.find(entry => entry.id === id);
+    if (!entry) return;
+    
+    // Formular mit den Daten füllen
+    teamMemberInput.value = entry.teamMember;
+    clientInput.value = entry.client;
+    projectInput.value = entry.project;
+    assignmentInput.value = entry.assignment;
+    noteInput.value = entry.note;
+    startDateInput.value = entry.startDate;
+    endDateInput.value = entry.endDate;
+    durationInput.value = entry.duration;
+    billedInput.value = entry.billed ? 'true' : 'false';
+    entryIdInput.value = entry.id;
+    
+    // Zum Formular scrollen
+    document.getElementById('time-tracker-form').scrollIntoView({behavior: 'smooth'});
+    
+    // Button-Text ändern
+    addTimeButton.textContent = 'Eintrag aktualisieren';
+  }
+  
+  function resetForm() {
+    entryIdInput.value = '';
+    teamMemberInput.value = '';
+    clientInput.value = '';
+    projectInput.value = '';
+    assignmentInput.value = '';
+    noteInput.value = '';
+    durationInput.value = '';
+    billedInput.value = 'false';
+    
+    // Button-Text zurücksetzen
+    addTimeButton.textContent = 'Eintrag hinzufügen';
+  }
+  
+  function saveTimeEntries() {
+    localStorage.setItem('timeEntries', JSON.stringify(timeEntries));
+  }
+  
+  function loadTimeEntries() {
+    const savedEntries = localStorage.getItem('timeEntries');
+    return savedEntries ? JSON.parse(savedEntries) : [];
+  }
+  
+  function generateUniqueId() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+  }
+  
+  function formatDate(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('de-DE');
+  }
 }
