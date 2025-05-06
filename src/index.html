@@ -5,17 +5,29 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Time Tracker</title>
         <link rel="stylesheet" href="styles.css">
+        <link rel="stylesheet" href="styles/base.css">
+        <link rel="stylesheet" href="styles/components.css">
+        <link rel="stylesheet" href="styles/forms.css">
+        <link rel="stylesheet" href="styles/header.css">
+        <link rel="stylesheet" href="styles/sidebar.css">
+        <link rel="stylesheet" href="styles/tab-dashboard.css">
+        <link rel="stylesheet" href="styles/tab-main.css">
+        <link rel="stylesheet" href="styles/tab-team.css">
+        <link rel="stylesheet" href="styles/tab-timetracking.css">
+        <link rel="stylesheet" href="styles/tables.css">
+        <link rel="stylesheet" href="styles/themes.css">
     </head>
     <body>
         <header class="app-header">
             <h1>Time Tracker</h1>
-            
+            <!--
             <div class="theme-switch-wrapper">
                 <label class="theme-switch" for="checkbox">
                     <input type="checkbox" id="checkbox" />
                     <div class="slider"></div>
                 </label>
             </div>
+            -->
         </header>
         
         <div class="container">
@@ -49,6 +61,8 @@
                     </button>
                 </div>
 
+
+                <!--
                 <div class="sidebar-content">
                     
                     <div class="filter-group">
@@ -72,77 +86,66 @@
                     
                     <div class="filter-group">
                         <button id="reset-filters" class="filter-button filter-reset">Filter Zurücksetzen</button>
-                    </div>
-
+                    </div>    
                 </div>
-                <!--
-                    <button class="info-icon" aria-label="Info">    
-                        <i class="fa-solid fa-question"></i>
-                        <p class="info-text-button">INFO</p>
-                    </button>
-                    
-                    <button class="settings-icon" aria-label="Settings">
-                        <i class="fa-solid fa-gear"></i>
-                        <p class="settings-text-button">SETTINGS</p>
-                    </button>
                 -->
+
             </div>
             
-            <div class="main-content">
-                <!-- Tab-Nav wurde entfernt und in die Seitenleiste verschoben -->
-                
+            <div class="main-content">                
                 <div class="tab-content active" id="tab1">
                     <h2>Time Tracking</h2>
                     
                     <div class="time-tracker-container">
-                        <!-- Linke Spalte: Teammitglied, Kunde und Projekt Auswahl -->
                         <div class="category-selection">
                             <div class="search-bar">
                                 <input type="text" id="category-search" class="search-input" placeholder="Suchen...">
                                 <i class="fa-solid fa-search search-icon"></i>
                             </div>
                             
-                            <div class="category-tabs">
-                                <button class="category-tab active" data-category="team">Teammitglied</button>
-                                <button class="category-tab" data-category="customer">Kunde</button>
-                                <button class="category-tab" data-category="project">Projekt</button>
-                            </div>
-                            
-                            <div class="category-list" id="category-list">
-                                <!-- Teammitglieder, Kunden oder Projekte werden dynamisch hier eingefügt -->
-                            </div>
-                            
-                            <div class="assignment-input-container">
-                                <label for="assignment-input">Auftrag</label>
-                                <input type="text" id="assignment-input" class="search-input" placeholder="z.B. 04.2025">
+                            <div class="selection-display">
+                                <div class="selection-item" id="selected-team-display">
+                                    <i class="fa-solid fa-user-tie"></i>
+                                    <select id="team-select" class="category-select">
+                                        <option value="">Teammitglied auswählen</option>
+                                        <!-- Team options will be populated via JavaScript -->
+                                    </select>
+                                </div>
+                                <div class="selection-item" id="selected-customer-display">
+                                    <i class="fa-solid fa-building"></i>
+                                    <select id="customer-select" class="category-select">
+                                        <option value="">Kunde auswählen</option>
+                                        <!-- Customer options will be populated via JavaScript -->
+                                    </select>
+                                </div>
+                                <div class="selection-item" id="selected-project-display">
+                                    <i class="fa-solid fa-briefcase"></i>
+                                    <select id="project-select" class="category-select">
+                                        <option value="">Projekt auswählen</option>
+                                        <!-- Project options will be populated via JavaScript -->
+                                    </select>
+                                </div>
+                                <div class="selection-item" id="selected-assignment-display">
+                                    <i class="fa-solid fa-calendar-alt"></i>
+                                    <input type="text" id="assignment-input" class="search-input" placeholder="z.B. 04.2025">
+                                </div>
                             </div>
                         </div>
                         
                         <!-- Mittlere Spalte: Timer und Projekte -->
                         <div class="timer-container">
-                            <div class="timer-select-container">
-                                <div class="selection-display">
-                                    <div class="selection-item" id="selected-team-display">
-                                        <i class="fa-solid fa-user-tie"></i>
-                                        <span>Kein Teammitglied ausgewählt</span>
-                                    </div>
-                                    <div class="selection-item" id="selected-customer-display">
-                                        <i class="fa-solid fa-building"></i>
-                                        <span>Kein Kunde ausgewählt</span>
-                                    </div>
-                                    <div class="selection-item" id="selected-project-display">
-                                        <i class="fa-solid fa-briefcase"></i>
-                                        <span>Kein Projekt ausgewählt</span>
-                                    </div>
-                                    <div class="selection-item" id="selected-assignment-display">
-                                        <i class="fa-solid fa-calendar-alt"></i>
-                                        <span>Kein Auftrag ausgewählt</span>
-                                    </div>
-                                </div>
-                                
+                            <div class="timer-select-container">                                
                                 <!-- Timer Buzzer -->
                                 <div class="timer-circle" id="timer-circle">
-                                    <div class="timer-display">00:00</div>
+                                    <div class="timer-display">
+                                        <div class="timer-digits">
+                                            <span class="timer-hours">00</span>
+                                            <span class="timer-separator">:</span>
+                                            <span class="timer-minutes">00</span>
+                                            <span class="timer-separator">:</span>
+                                            <span class="timer-seconds">00</span>
+                                        </div>
+                                    </div>
                                     <div class="timer-status" id="timer-status">Bereit</div>
                                     <div class="timer-button-container">
                                         <button class="timer-start-btn" id="timer-start-btn">
@@ -162,13 +165,13 @@
                                 
                                 <div class="notes-actions">
                                     <button id="save-entry-btn" class="action-btn save-btn">
-                                        <i class="fa-solid fa-save"></i> Speichern
+                                        <i class="fa-solid fa-save"></i>
                                     </button>
                                     <button id="reset-entry-btn" class="action-btn reset-btn">
-                                        <i class="fa-solid fa-undo"></i> Zurücksetzen
+                                        <i class="fa-solid fa-undo"></i>
                                     </button>
                                     <button id="delete-entry-btn" class="action-btn delete-btn">
-                                        <i class="fa-solid fa-trash"></i> Löschen
+                                        <i class="fa-solid fa-trash"></i>
                                     </button>
                                 </div>
                             </div>
@@ -196,7 +199,7 @@
                                     <th>Datum</th>
                                     <th>Dauer</th>
                                     <th>Abgerechnet</th>
-                                    <th>Aktionen</th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -266,7 +269,7 @@
                                 <td><input type="text" class="editable-cell" placeholder=""></td>
                                 <td><input type="text" class="editable-cell" placeholder=""></td>
                                 <td><input type="text" class="editable-cell" placeholder=""></td>
-                                <td><input type="text" class="editable-cell" placeholder=""></td>
+<td><input type="text" class="editable-cell" placeholder=""></td>
                             </tr>
                             <tr>
                                 <td>Abgerechnete Stunden</td>
@@ -330,9 +333,13 @@
                                 <td></td>
                                 <td></td>
                                 <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
                             </tr>
                             <tr>
                                 <td>Abweichungen</td>
+                                <td></td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
@@ -363,6 +370,10 @@
         </div>
 
         <script src="renderer.js"></script>
+        <script src="scripts/themes.js"></script>
+        <script src="scripts/sidebar.js"></script>
+        <script src="scripts/data-manager.js"></script>
+        <script src="scripts/time-tracker.js"></script>
         <script src="https://kit.fontawesome.com/d1d754f7fa.js" crossorigin="anonymous"></script>
     </body>
 </html>

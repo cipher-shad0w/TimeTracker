@@ -1,0 +1,115 @@
+.time-summary-container {
+    margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.time-summary-card {
+    background-color: var(--color-bg1);
+    border-radius: var(--border-radius);
+    padding: 16px;
+    transition: transform 0.2s ease;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: var(--glass-border);
+}
+
+.time-summary-card:hover {
+    transform: translateY(-3px);
+}
+
+.time-summary-header {
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: var(--glass-border);
+}
+
+.time-summary-header h3 {
+    margin: 0;
+    padding: 0;
+    font-size: 18px;
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.time-stat {
+    text-align: center;
+    padding: 10px;
+    border-radius: var(--button-radius);
+    background-color: rgba(0, 0, 0, 0.1);
+    margin: 8px 0;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.stat-label {
+    display: block;
+    font-size: 14px;
+    color: var(--color-text-secondary);
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--color-yellow);
+}
+
+.time-stat.total .stat-value {
+    color: var(--color-green);
+}
+
+/* 6.2 Editable Elements */
+.editable-cell {
+    background-color: var(--color-bg1);
+    color: var(--color-text-primary);
+    border: var(--glass-border);
+    padding: 8px;
+    border-radius: var(--button-radius);
+    cursor: pointer;
+    width: 100%;
+    display: block;
+    text-align: center;
+    font-size: 14px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.editable-cell:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.2);
+}
+
+/* Fibu Table Specific Styling */
+.fibu-table {
+    font-size: 14px;
+    width: 100%;
+    overflow-x: auto;
+    display: block;
+}
+
+.fibu-table th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: var(--color-bg2);
+    font-size: 12px;
+    padding: 10px 8px;
+}
+
+.fibu-table td {
+    padding: 8px;
+    text-align: center;
+}
+
+.fibu-table tr td:first-child {
+    text-align: left;
+    font-weight: 500;
+    background-color: var(--color-bg2);
+    position: sticky;
+    left: 0;
+    z-index: 5;
+}

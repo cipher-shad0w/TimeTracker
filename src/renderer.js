@@ -16,7 +16,8 @@ const appState = {
   },
   filters: {
     teamMember: '',
-    project: ''
+    project: '',
+    customer: ''
   },
   sidebarCollapsed: false
 };
@@ -159,8 +160,9 @@ function processCsvData(csvContent) {
   renderDataTable(dateColumns);
   
   populateFilterOptions();
+  populateCategoryDropdowns(); // Add this line to populate our dropdowns
   calculateTeamMemberTimeStatistics();
-  populateFibuTimesRow(); // Added this call to populate the Fibu times row
+  populateFibuTimesRow();
 }
 
 function findDateColumns() {
@@ -1089,6 +1091,11 @@ function setupTimeTracker() {
   const timerDisplay = document.querySelector('.timer-display');
   const timerStatus = document.getElementById('timer-status');
   
+  // Timer-Anzeige mit korrektem Format initialisieren
+  if (timerDisplay) {
+    timerDisplay.textContent = '00:00:00';
+  }
+  
   // DOM-Elemente für Notizen und Aktionen
   const timeEntryNotes = document.getElementById('time-entry-notes');
   const saveEntryBtn = document.getElementById('save-entry-btn');
@@ -1112,6 +1119,94 @@ function setupTimeTracker() {
   let timerSeconds = 0;
   let timeEntries = loadTimeEntries();
   let currentCategory = 'team'; // Standard-Kategorie ist Teammitglied
+
+  // Prüfe, ob die Timer-Elemente existieren
+  if (timerDisplay) {
+    // Timer initial auf 00:00:00 setzen
+    timerDisplay.textContent = '00:00:00';
+  } else {
+    console.error('Timer-Display nicht gefunden!');
+  }
+
+  // Timer-Funktionalität
+  if (timerStartBtn && timerStopBtn) {
+    timerStartBtn.addEventListener('click', startTimer);
+    timerStopBtn.addEventListener('click', stopTimer);
+  } else {
+    console.error('Timer-Buttons nicht gefunden!');
+  }
+
+  // Timer starten
+  function startTimer() {
+    if (timerInterval === null) {
+      timerStartTime = Date.now() - (timerSeconds * 1000);
+      timerInterval = setInterval(updateTimer, 1000);
+      
+      // UI aktualisieren
+      if (timerStartBtn) timerStartBtn.style.display = 'none';
+      if (timerStopBtn) timerStopBtn.style.display = 'inline-flex';
+      if (timerStatus) {
+        timerStatus.textContent = 'Zeit läuft...';
+        timerStatus.style.color = '#4CAF50';
+      }
+    }
+  }
+
+  // Timer stoppen
+  function stopTimer() {
+    if (timerInterval !== null) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      
+      // UI zurücksetzen
+      if (timerStartBtn) timerStartBtn.style.display = 'inline-flex';
+      if (timerStopBtn) timerStopBtn.style.display = 'none';
+      if (timerStatus) {
+        timerStatus.textContent = 'Gestoppt';
+        timerStatus.style.color = '#F44336';
+      }
+    }
+  }
+
+  // Timer aktualisieren
+  function updateTimer() {
+    // Berechne verstrichene Zeit
+    const elapsedSeconds = Math.floor((Date.now() - timerStartTime) / 1000);
+    timerSeconds = elapsedSeconds;
+    
+    // Zeit in Stunden, Minuten und Sekunden zerlegen
+    const hours = Math.floor(elapsedSeconds / 3600);
+    const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+    const seconds = elapsedSeconds % 60;
+    
+    // Formatierte Strings mit führenden Nullen
+    const formattedHours = String(hours).padStart(2, '0');
+    const formattedMinutes = String(minutes).padStart(2, '0');
+    const formattedSeconds = String(seconds).padStart(2, '0');
+    
+    // Suche die individuellen Zeitanzeige-Elemente
+    const hoursElement = document.querySelector('.timer-hours');
+    const minutesElement = document.querySelector('.timer-minutes');
+    const secondsElement = document.querySelector('.timer-seconds');
+    
+    // Aktualisiere die Elemente wenn sie existieren
+    if (hoursElement) hoursElement.textContent = formattedHours;
+    if (minutesElement) minutesElement.textContent = formattedMinutes;
+    if (secondsElement) secondsElement.textContent = formattedSeconds;
+    
+    // Speichere auch das komplette Format für andere Funktionen
+    const formattedTime = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+    
+    // Speichere den Wert auch im DOM-Element für spätere Verwendung
+    if (timerDisplay) {
+      timerDisplay.setAttribute('data-duration', formattedTime);
+    }
+  }
+
+  // Aktions-Buttons
+  saveEntryBtn.addEventListener('click', () => {
+    saveTimeEntry();
+  });
 
   // Farben für Kategorieeinträge
   const colors = [
@@ -1155,39 +1250,6 @@ function setupTimeTracker() {
     if (assignmentInput.value) {
       selectedAssignmentDisplay.querySelector('span').textContent = assignmentInput.value;
       selectedAssignmentDisplay.classList.add('selected');
-    }
-  });
-
-  // Timer-Funktionalität
-  timerStartBtn.addEventListener('click', () => {
-    // Validierung
-    if (!selectedTeamInput.value || !selectedCustomerInput.value || !selectedProjectInput.value) {
-      alert('Bitte wählen Sie mindestens Teammitglied, Kunde und Projekt aus.');
-      return;
-    }
-    
-    // Timer starten
-    if (timerInterval === null) {
-      timerStartTime = Date.now() - (timerSeconds * 1000);
-      timerInterval = setInterval(updateTimer, 1000);
-      timerStartBtn.style.display = 'none';
-      timerStopBtn.style.display = 'inline-flex';
-      timerStatus.textContent = 'Zeit läuft...';
-      timerStatus.style.color = '#4CAF50';
-    }
-  });
-
-  timerStopBtn.addEventListener('click', () => {
-    // Timer stoppen
-    if (timerInterval !== null) {
-      clearInterval(timerInterval);
-      timerInterval = null;
-      
-      // UI zurücksetzen
-      timerStartBtn.style.display = 'inline-flex';
-      timerStopBtn.style.display = 'none';
-      timerStatus.textContent = 'Gestoppt';
-      timerStatus.style.color = '#F44336';
     }
   });
 
@@ -1368,13 +1430,37 @@ function setupTimeTracker() {
    * Timer aktualisieren
    */
   function updateTimer() {
+    // Berechne verstrichene Zeit
     const elapsedSeconds = Math.floor((Date.now() - timerStartTime) / 1000);
     timerSeconds = elapsedSeconds;
     
-    const minutes = Math.floor(elapsedSeconds / 60);
+    // Zeit in Stunden, Minuten und Sekunden zerlegen
+    const hours = Math.floor(elapsedSeconds / 3600);
+    const minutes = Math.floor((elapsedSeconds % 3600) / 60);
     const seconds = elapsedSeconds % 60;
     
-    timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    // Formatierte Strings mit führenden Nullen
+    const formattedHours = String(hours).padStart(2, '0');
+    const formattedMinutes = String(minutes).padStart(2, '0');
+    const formattedSeconds = String(seconds).padStart(2, '0');
+    
+    // Suche die individuellen Zeitanzeige-Elemente
+    const hoursElement = document.querySelector('.timer-hours');
+    const minutesElement = document.querySelector('.timer-minutes');
+    const secondsElement = document.querySelector('.timer-seconds');
+    
+    // Aktualisiere die Elemente wenn sie existieren
+    if (hoursElement) hoursElement.textContent = formattedHours;
+    if (minutesElement) minutesElement.textContent = formattedMinutes;
+    if (secondsElement) secondsElement.textContent = formattedSeconds;
+    
+    // Speichere auch das komplette Format für andere Funktionen
+    const formattedTime = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+    
+    // Speichere den Wert auch im DOM-Element für spätere Verwendung
+    if (timerDisplay) {
+      timerDisplay.setAttribute('data-duration', formattedTime);
+    }
   }
 
   /**
@@ -1424,7 +1510,7 @@ function setupTimeTracker() {
       clearInterval(timerInterval);
       timerInterval = null;
       timerSeconds = 0;
-      timerDisplay.textContent = '00:00';
+      timerDisplay.textContent = '00:00:00';
       timerStartBtn.style.display = 'inline-flex';
       timerStopBtn.style.display = 'none';
       timerStatus.textContent = 'Bereit';
@@ -1458,7 +1544,7 @@ function setupTimeTracker() {
       timerInterval = null;
     }
     timerSeconds = 0;
-    timerDisplay.textContent = '00:00';
+    timerDisplay.textContent = '00:00:00';
     timerStartBtn.style.display = 'inline-flex';
     timerStopBtn.style.display = 'none';
     timerStatus.textContent = 'Bereit';
@@ -1648,5 +1734,69 @@ function setupTimeTracker() {
    */
   function formatDateForIso(date) {
     return date.toISOString().split('T')[0];
+  }
+}
+
+/**
+ * Populates the dropdown selectors in the category selection area with data from CSV
+ */
+function populateCategoryDropdowns() {
+  const teamSelect = document.getElementById('team-select');
+  const customerSelect = document.getElementById('customer-select');
+  const projectSelect = document.getElementById('project-select');
+  
+  if (!teamSelect || !customerSelect || !projectSelect) return;
+  
+  // Clear existing options
+  teamSelect.innerHTML = '<option value="">Teammitglied auswählen</option>';
+  customerSelect.innerHTML = '<option value="">Kunde auswählen</option>';
+  projectSelect.innerHTML = '<option value="">Projekt auswählen</option>';
+  
+  // Find correct column indices
+  const teamColIdx = findColumnIndex('team') !== -1 ? findColumnIndex('team') : 0;
+  const customerColIdx = findColumnIndex('kund') !== -1 ? findColumnIndex('kund') : 1; // matches kunde/kunden
+  const projectColIdx = findColumnIndex('projekt') !== -1 ? findColumnIndex('projekt') : 2;
+  
+  // Get unique values for each category
+  const teamMembers = extractUniqueValues(teamColIdx);
+  const customers = extractUniqueValues(customerColIdx);
+  const projects = extractUniqueValues(projectColIdx);
+  
+  // Populate select elements
+  populateSelectOptions(teamSelect, teamMembers);
+  populateSelectOptions(customerSelect, customers);
+  populateSelectOptions(projectSelect, projects);
+  
+  // Add event listeners to update the hidden inputs and UI
+  teamSelect.addEventListener('change', function() {
+    const selectedValue = this.value;
+    document.getElementById('selected-team').value = selectedValue;
+    updateSelectionDisplayFromDropdown('team', selectedValue);
+  });
+  
+  customerSelect.addEventListener('change', function() {
+    const selectedValue = this.value;
+    document.getElementById('selected-customer').value = selectedValue;
+    updateSelectionDisplayFromDropdown('customer', selectedValue);
+  });
+  
+  projectSelect.addEventListener('change', function() {
+    const selectedValue = this.value;
+    document.getElementById('selected-project').value = selectedValue;
+    updateSelectionDisplayFromDropdown('project', selectedValue);
+  });
+}
+
+/**
+ * Updates the selection display based on dropdown selection
+ */
+function updateSelectionDisplayFromDropdown(category, value) {
+  const displayElement = document.getElementById(`selected-${category}-display`);
+  if (!displayElement) return;
+  
+  if (value) {
+    displayElement.classList.add('selected');
+  } else {
+    displayElement.classList.remove('selected');
   }
 }

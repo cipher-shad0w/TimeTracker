@@ -1,0 +1,68 @@
+:root {
+    /* Twitter/X Glass Theme Colors */
+    --color-bg0: rgba(0, 0, 0, 0.6);           /* Background with transparency */
+    --color-bg1: rgba(32, 32, 32, 0.7);        /* Secondary Background */
+    --color-bg2: rgba(45, 45, 45, 0.7);        /* Tertiary Background */
+    --color-bg3: rgba(60, 60, 60, 0.7);        /* Hover Background */
+    --color-fg0: #e7e9ea;                      /* Primary Text */
+    --color-fg1: #d1d1d1;                      /* Secondary Text */
+    --color-fg2: #a9a9a9;                      /* Tertiary Text */
+    --color-fg3: #71767b;                      /* Disabled Text */
+    --color-red: #f4245e;                      /* Error/Alert */
+    --color-green: #00ba7c;                    /* Success */
+    --color-yellow: #ffd400;                   /* Warning */
+    --color-blue: #1d9bf0;                     /* Primary Twitter Blue */
+    --color-purple: #7856ff;                   /* Secondary Accent */
+    --color-aqua: #00d8ff;                     /* Tertiary Accent */
+    --color-orange: #ff7a00;                   /* Quaternary Accent */
+    
+    /* Semantic Color Variables */
+    --color-primary: var(--color-blue);
+    --color-primary-dark: #1a8cd8;  
+    --color-primary-light: #4eadf3;
+    --color-accent: var(--color-orange);
+    --color-background: rgba(0, 0, 0, 0.6);
+    --color-background-sidebar: rgba(20, 20, 20, 0.7);
+    --color-border: rgba(255, 255, 255, 0.08);
+    --color-text-primary: var(--color-fg0);
+    --color-text-secondary: var(--color-fg2);
+    --color-text-light: #ffffff;
+    --color-table-header: var(--color-bg2);
+    --color-shadow: rgba(0, 0, 0, 0.2);
+    --color-tab-selected: var(--color-primary);
+    --color-hover-highlight: rgba(255, 255, 255, 0.05);
+    
+    /* Glass Effect Variables */
+    --glass-blur: 10px;
+    --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+    
+    /* Layout Variables */
+    --sidebar-width: 260px;
+    --sidebar-collapsed-width: 70px;
+    --border-radius: 16px;
+    --button-radius: 20px;
+}
+
+:root[data-theme="light"] {
+    --color-bg0: rgba(255, 255, 255, 0.7);     /* Background with transparency */
+    --color-bg1: rgba(239, 243, 244, 0.8);     /* Secondary Background */
+    --color-bg2: rgba(220, 225, 228, 0.8);     /* Tertiary Background */
+    --color-bg3: rgba(200, 205, 208, 0.7);     /* Hover Background */
+    --color-fg0: #0f1419;                      /* Primary Text */
+    --color-fg1: #272c30;                      /* Secondary Text */
+    --color-fg2: #3e4246;                      /* Tertiary Text */
+    --color-fg3: #536471;                      /* Disabled Text */
+    --color-red: #f4245e;                      /* Error/Alert */
+    --color-green: #00ba7c;                    /* Success */
+    --color-yellow: #ffd400;                   /* Warning */
+    --color-blue: #1d9bf0;                     /* Primary Twitter Blue */
+    --color-purple: #7856ff;                   /* Secondary Accent */
+    --color-aqua: #00d8ff;                     /* Tertiary Accent */
+    --color-orange: #ff7a00;                   /* Quaternary Accent */
+    
+    --color-background: rgba(255, 255, 255, 0.7);
+    --color-background-sidebar: rgba(245, 248, 250, 0.8);
+    --color-border: rgba(0, 0, 0, 0.08);
+    --color-shadow: rgba(0, 0, 0, 0.08);
+    --color-hover-highlight: rgba(0, 0, 0, 0.03);
+}
