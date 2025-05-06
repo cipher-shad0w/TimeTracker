@@ -966,3 +966,387 @@ tr:hover {
     left: 0;
     z-index: 5;
 }
+
+/* Time Tracker Buzzer Style */
+.time-tracker-container {
+    display: flex;
+    margin-bottom: 30px;
+    background-color: var(--color-bg1);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    border: var(--glass-border);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+/* Kunden-Auswahl links */
+.customer-selection {
+    width: 280px;
+    border-right: var(--glass-border);
+    background-color: rgba(255, 255, 255, 0.02);
+    display: flex;
+    flex-direction: column;
+}
+
+.search-bar {
+    padding: 15px;
+    position: relative;
+    border-bottom: var(--glass-border);
+}
+
+.search-bar .search-input {
+    padding-left: 35px;
+    margin-bottom: 0;
+}
+
+.search-icon {
+    position: absolute;
+    left: 25px;
+    top: 27px;
+    color: var(--color-fg2);
+}
+
+.customer-list {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 400px;
+}
+
+.customer-item {
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    border-bottom: var(--glass-border);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.customer-item:hover {
+    background-color: var(--color-hover-highlight);
+}
+
+.customer-item.selected {
+    background-color: rgba(29, 155, 240, 0.15);
+}
+
+.customer-color {
+    width: 5px;
+    height: 30px;
+    border-radius: 2px;
+    margin-right: 15px;
+}
+
+.customer-name {
+    font-weight: 500;
+    flex: 1;
+}
+
+.customer-favorite {
+    color: var(--color-yellow);
+    margin-left: 10px;
+}
+
+/* Timer Container */
+.timer-container {
+    flex: 1;
+    display: flex;
+    padding: 25px;
+}
+
+.timer-select-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+}
+
+.project-selection {
+    margin-bottom: 20px;
+    width: 80%;
+    max-width: 400px;
+}
+
+.project-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: var(--glass-border);
+    background-color: var(--color-bg1);
+    color: var(--color-text-primary);
+    border-radius: var(--button-radius);
+    transition: all 0.2s ease;
+    font-size: 14px;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.project-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.2);
+}
+
+/* Timer Circle */
+.timer-circle {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background-color: #333;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    border: 8px solid rgba(200, 200, 200, 0.2);
+}
+
+.timer-circle::before {
+    content: "";
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    bottom: -20px;
+    left: -20px;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0) 70%);
+    border-radius: 50%;
+    z-index: -1;
+}
+
+.timer-display {
+    font-size: 38px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+.timer-customer {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 20px;
+    max-width: 80%;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.timer-button-container {
+    position: absolute;
+    bottom: -15%;
+    display: flex;
+    gap: 10px;
+    transform: translateY(25%);
+}
+
+.timer-start-btn, 
+.timer-stop-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.timer-start-btn {
+    background-color: var(--color-green);
+    color: white;
+}
+
+.timer-stop-btn {
+    background-color: var(--color-red);
+    color: white;
+}
+
+.timer-start-btn:hover,
+.timer-stop-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Notes Section */
+.notes-container {
+    width: 280px;
+    margin-left: 25px;
+    display: flex;
+    flex-direction: column;
+}
+
+.notes-header {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 10px;
+}
+
+.notes-textarea {
+    flex: 1;
+    padding: 15px;
+    background-color: var(--color-bg1);
+    border: var(--glass-border);
+    border-radius: var(--border-radius);
+    color: var(--color-text-primary);
+    font-size: 14px;
+    resize: none;
+    min-height: 200px;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.notes-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+/* Kategorie-Auswahl Stile */
+.category-selection {
+    width: 280px;
+    border-right: var(--glass-border);
+    background-color: rgba(255, 255, 255, 0.02);
+    display: flex;
+    flex-direction: column;
+}
+
+.category-tabs {
+    display: flex;
+    border-bottom: var(--glass-border);
+}
+
+.category-tab {
+    flex: 1;
+    padding: 12px 8px;
+    text-align: center;
+    background: none;
+    border: none;
+    color: var(--color-fg2);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.category-tab:not(:last-child) {
+    border-right: var(--glass-border);
+}
+
+.category-tab.active {
+    color: var(--color-primary);
+    background-color: rgba(29, 155, 240, 0.05);
+    box-shadow: inset 0 -3px 0 var(--color-primary);
+}
+
+.category-tab:hover:not(.active) {
+    background-color: var(--color-hover-highlight);
+    color: var(--color-fg1);
+}
+
+.category-list {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 350px;
+}
+
+.assignment-input-container {
+    padding: 15px;
+    border-top: var(--glass-border);
+}
+
+.assignment-input-container label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--color-fg1);
+}
+
+/* Auswahlanzeige Stile */
+.selection-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+    width: 80%;
+    max-width: 400px;
+}
+
+.selection-item {
+    background-color: var(--color-bg1);
+    border: var(--glass-border);
+    border-radius: 18px;
+    padding: 8px 15px;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.selection-item i {
+    margin-right: 8px;
+    color: var(--color-fg2);
+}
+
+.selection-item.selected {
+    background-color: rgba(29, 155, 240, 0.1);
+    border-color: var(--color-primary);
+}
+
+.selection-item.selected i {
+    color: var(--color-primary);
+}
+
+/* Action Buttons unter dem Notizfeld */
+.notes-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.action-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: var(--button-radius);
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.save-btn {
+    background-color: var(--color-green);
+}
+
+.save-btn:hover {
+    background-color: #00a06d;
+}
+
+.reset-btn {
+    background-color: var(--color-blue);
+}
+
+.reset-btn:hover {
+    background-color: #1a8cd8;
+}
+
+.delete-btn {
+    background-color: var(--color-red);
+}
+
+.delete-btn:hover {
+    background-color: #e01c54;
+}

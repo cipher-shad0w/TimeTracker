@@ -93,82 +93,90 @@
                 
                 <div class="tab-content active" id="tab1">
                     <h2>Time Tracking</h2>
-                    <form id="time-tracker-form" class="glass-effect">
-                        <!-- Zeile 1: Teammitglied und Projekt (zwei wichtigste Auswahlfelder) -->
-                        <div class="form-row">
-                            <div class="filter-group">
-                                <label for="team-member-input" class="filter-label">Teammitglied</label>
-                                <select id="team-member-input" class="filter-select">
-                                    <option value="">Teammitglied auswählen</option>
-                                </select>
+                    
+                    <div class="time-tracker-container">
+                        <!-- Linke Spalte: Teammitglied, Kunde und Projekt Auswahl -->
+                        <div class="category-selection">
+                            <div class="search-bar">
+                                <input type="text" id="category-search" class="search-input" placeholder="Suchen...">
+                                <i class="fa-solid fa-search search-icon"></i>
                             </div>
                             
-                            <div class="filter-group">
-                                <label for="project-input" class="filter-label">Projekte</label>
-                                <select id="project-input" class="filter-select">
-                                    <option value="">Projekt auswählen</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <!-- Zeile 2: Kunde und Auftrag (zusammengehörend) -->
-                        <div class="form-row">
-                            <div class="filter-group">
-                                <label for="client-input" class="filter-label">Kunden</label>
-                                <select id="client-input" class="filter-select">
-                                    <option value="">Kunde auswählen</option>
-                                </select>
+                            <div class="category-tabs">
+                                <button class="category-tab active" data-category="team">Teammitglied</button>
+                                <button class="category-tab" data-category="customer">Kunde</button>
+                                <button class="category-tab" data-category="project">Projekt</button>
                             </div>
                             
-                            <div class="filter-group">
-                                <label for="assignment-input" class="filter-label">Auftrag</label>
+                            <div class="category-list" id="category-list">
+                                <!-- Teammitglieder, Kunden oder Projekte werden dynamisch hier eingefügt -->
+                            </div>
+                            
+                            <div class="assignment-input-container">
+                                <label for="assignment-input">Auftrag</label>
                                 <input type="text" id="assignment-input" class="search-input" placeholder="z.B. 04.2025">
                             </div>
                         </div>
                         
-                        <!-- Zeile 3: Dauer und Abgerechnet-Status -->
-                        <div class="form-row">
-                            <div class="filter-group">
-                                <label for="duration-input" class="filter-label">Dauer (HH:MM)</label>
-                                <input type="text" id="duration-input" class="search-input" placeholder="z.B. 01:30">
+                        <!-- Mittlere Spalte: Timer und Projekte -->
+                        <div class="timer-container">
+                            <div class="timer-select-container">
+                                <div class="selection-display">
+                                    <div class="selection-item" id="selected-team-display">
+                                        <i class="fa-solid fa-user-tie"></i>
+                                        <span>Kein Teammitglied ausgewählt</span>
+                                    </div>
+                                    <div class="selection-item" id="selected-customer-display">
+                                        <i class="fa-solid fa-building"></i>
+                                        <span>Kein Kunde ausgewählt</span>
+                                    </div>
+                                    <div class="selection-item" id="selected-project-display">
+                                        <i class="fa-solid fa-briefcase"></i>
+                                        <span>Kein Projekt ausgewählt</span>
+                                    </div>
+                                    <div class="selection-item" id="selected-assignment-display">
+                                        <i class="fa-solid fa-calendar-alt"></i>
+                                        <span>Kein Auftrag ausgewählt</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Timer Buzzer -->
+                                <div class="timer-circle" id="timer-circle">
+                                    <div class="timer-display">00:00</div>
+                                    <div class="timer-status" id="timer-status">Bereit</div>
+                                    <div class="timer-button-container">
+                                        <button class="timer-start-btn" id="timer-start-btn">
+                                            <i class="fa-solid fa-play"></i>
+                                        </button>
+                                        <button class="timer-stop-btn" id="timer-stop-btn" style="display: none;">
+                                            <i class="fa-solid fa-stop"></i>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                             
-                            <div class="filter-group">
-                                <label for="billed-input" class="filter-label">Abgerechnet</label>
-                                <select id="billed-input" class="filter-select">
-                                    <option value="false">Nein</option>
-                                    <option value="true">Ja</option>
-                                </select>
+                            <!-- Rechte Spalte: Notizen -->
+                            <div class="notes-container">
+                                <div class="notes-header">Notiz</div>
+                                <textarea id="time-entry-notes" class="notes-textarea" placeholder="Notizen zur Zeiterfassung..."></textarea>
+                                
+                                <div class="notes-actions">
+                                    <button id="save-entry-btn" class="action-btn save-btn">
+                                        <i class="fa-solid fa-save"></i> Speichern
+                                    </button>
+                                    <button id="reset-entry-btn" class="action-btn reset-btn">
+                                        <i class="fa-solid fa-undo"></i> Zurücksetzen
+                                    </button>
+                                    <button id="delete-entry-btn" class="action-btn delete-btn">
+                                        <i class="fa-solid fa-trash"></i> Löschen
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        
-                        <!-- Zeile 4: Notiz (volle Breite) -->
-                        <div class="form-row">
-                            <div class="filter-group full-width">
-                                <label for="note-input" class="filter-label">Notiz</label>
-                                <input type="text" id="note-input" class="search-input" placeholder="Beschreibung der Tätigkeit">
-                            </div>
-                        </div>
-                        
-                        <!-- Versteckte Felder: Datum wird automatisch gesetzt -->
-                        <input type="hidden" id="start-date-input">
-                        <input type="hidden" id="end-date-input">
-                        <input type="hidden" id="entry-id-input" value="">
-                        
-                        <!-- Aktionen: Timer und Hinzufügen-Button -->
-                        <div class="form-actions">
-                            <button type="button" id="start-timer-button" class="timer-button">
-                                <i class="fa-solid fa-play"></i> Zeitmessung starten
-                            </button>
-                            <button type="button" id="stop-timer-button" class="timer-button timer-stop" style="display: none;">
-                                <i class="fa-solid fa-stop"></i> Zeitmessung stoppen
-                            </button>
-                            <button type="button" id="add-time-button" class="filter-button">Eintrag hinzufügen</button>
-                            <div id="timer-display" class="timer-display">00:00:00</div>
-                        </div>
-                    </form>
-
-                    <div id="time-tracker-summary">
+                    </div>
+                    
+                    <!-- Aktuelle Zeiterfassung -->
+                    <div id="time-tracker-summary"></div>
                         <h3>Erfasste Zeiten</h3>
                         <div class="time-table-actions">
                             <button id="sort-date-button" class="action-button">
@@ -196,6 +204,12 @@
                             </tbody>
                         </table>
                     </div>
+                    
+                    <!-- Hidden inputs for form data -->
+                    <input type="hidden" id="selected-team" value="">
+                    <input type="hidden" id="selected-customer" value="">
+                    <input type="hidden" id="selected-project" value="">
+                    <input type="hidden" id="entry-id-input" value="">
                 </div>
                     
                 <div class="tab-content" id="tab2">
@@ -253,8 +267,6 @@
                                 <td><input type="text" class="editable-cell" placeholder=""></td>
                                 <td><input type="text" class="editable-cell" placeholder=""></td>
                                 <td><input type="text" class="editable-cell" placeholder=""></td>
-                                <td><input type="text" class="editable-cell" placeholder=""></td>
-                                <td><input type="text" class="editable-cell" placeholder=""></td>
                             </tr>
                             <tr>
                                 <td>Abgerechnete Stunden</td>
@@ -300,6 +312,7 @@
                                 <td></td>
                                 <td></td>
                                 <td></td>
+                                <td></td>
                             </tr>
                             <tr>
                                 <td>Genaues Honorar</td>
@@ -320,6 +333,8 @@
                             </tr>
                             <tr>
                                 <td>Abweichungen</td>
+                                <td></td>
+                                <td></td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
