@@ -82,7 +82,8 @@ function setupSidebarToggle() {
 }
 
 function setupTabs() {
-  const tabButtons = document.querySelectorAll('.tab-button');
+  // Jetzt benutzen wir die sidebar-tab-buttons anstelle der alten tab-buttons
+  const tabButtons = document.querySelectorAll('.sidebar-tab-button');
   const tabContents = document.querySelectorAll('.tab-content');
 
   tabButtons.forEach(button => {
