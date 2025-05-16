@@ -1,0 +1,64 @@
+/**
+ * TimeTracker - Team Tab Styles
+ * Spezifische Stile für den Team-Übersicht-Tab
+ */
+
+/* Team Tab Containers */
+#tab3 {
+    padding: 20px;
+}
+
+/* Team Summary Container */
+.time-summary-container {
+    margin-bottom: 30px;
+}
+
+.time-summary-card {
+    background-color: var(--color-bg1);
+    border-radius: var(--border-radius);
+    border: var(--glass-border);
+    overflow: hidden;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.time-summary-header {
+    padding: 15px 20px;
+    background-color: var(--color-bg2);
+    border-bottom: var(--glass-border);
+}
+
+.time-summary-header h3 {
+    margin: 0;
+    color: var(--color-text-light);
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* Team stats table */
+#team-stats-table {
+    margin-bottom: 0;
+}
+
+/* Team time entries */
+#team-time-tracker-summary {
+    margin-top: 30px;
+}
+
+/* Improve spacing for Team Tab elements */
+#tab3 h3 {
+    margin-top: 30px;
+    margin-bottom: 15px;
+    color: var(--color-text-light);
+    font-size: 20px;
+    font-weight: 600;
+}
+
+#tab3 .time-table-actions {
+    margin-bottom: 15px;
+}
+
+/* Ensure content is within the dark window */
+#tab3 #team-time-tracker-table {
+    width: 100%;
+}

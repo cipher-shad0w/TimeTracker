@@ -1,0 +1,68 @@
+/* Form Elements */
+
+/* Form Groups */
+.filter-group {
+    margin-bottom: 15px;
+}
+
+.filter-label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--color-text-primary);
+    font-weight: 600;
+    font-size: 13px;
+}
+
+/* Buttons */
+.timer-button {
+    background-color: var(--color-blue);
+    color: white;
+    border: none;
+    border-radius: var(--button-radius);
+    padding: 10px 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    letter-spacing: 0.3px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.timer-button:hover {
+    background-color: var(--color-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.timer-button.timer-stop {
+    background-color: var(--color-red);
+}
+
+.timer-button.timer-stop:hover {
+    background-color: #e01c54;
+}
+
+.action-button {
+    background-color: var(--color-bg1);
+    color: var(--color-text-primary);
+    border: var(--glass-border);
+    border-radius: var(--button-radius);
+    padding: 8px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.action-button:hover {
+    background-color: var(--color-bg2);
+    transform: translateY(-2px);
+}
+
+/* Table Actions */
+.time-table-actions {
+    display: flex;
+    margin-bottom: 15px;
+    gap: 10px;
+}

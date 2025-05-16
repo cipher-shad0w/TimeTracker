@@ -3,6 +3,10 @@
  * This file contains the complete logic for the timer while maintaining the visual design
  */
 
+// Import data manager to access the central store
+const dataManager = require('./scripts/modules/data-manager');
+const appState = require('./scripts/modules/app-state');
+
 class TimeTracker {
   /**
    * Initialize the TimeTracker
@@ -21,8 +25,8 @@ class TimeTracker {
     // Log initialization
     this.debugLog('TimeTracker is being initialized');
     
-    // Load entries from localStorage
-    this.timeEntries = this.loadTimeEntries();
+    // Use entries from central store
+    this.timeEntries = appState.centralStore.timeEntries;
     
     // Reference DOM elements
     this.initDomElements();
@@ -353,7 +357,8 @@ class TimeTracker {
       endDate: this.formatDateForIso(now),
       duration: this.getTimerDurationText(),
       billed: false,
-      timestamp: now.getTime()
+      timestamp: now.getTime(),
+      source: 'manual_entry' // Mark as manually entered
     };
     
     // Add new entry or update existing one
@@ -370,8 +375,10 @@ class TimeTracker {
       this.timeEntries.push(entryData);
     }
     
-    // Save, reset UI and re-render
-    this.saveTimeEntries();
+    // Save to central store and localStorage
+    dataManager.saveTimeEntriesToLocalStorage(this.timeEntries);
+    
+    // Re-render and reset form
     this.renderTimeEntries();
     this.resetForm();
     
@@ -576,7 +583,8 @@ class TimeTracker {
     const index = this.timeEntries.findIndex(entry => entry.id === id);
     if (index !== -1) {
       this.timeEntries.splice(index, 1);
-      this.saveTimeEntries();
+      // Save to central store and localStorage
+      dataManager.saveTimeEntriesToLocalStorage(this.timeEntries);
       this.renderTimeEntries();
       this.debugLog(`Time entry deleted: ${id}`);
     }
@@ -589,7 +597,8 @@ class TimeTracker {
     const index = this.timeEntries.findIndex(entry => entry.id === id);
     if (index !== -1) {
       this.timeEntries[index].billed = !this.timeEntries[index].billed;
-      this.saveTimeEntries();
+      // Save to central store and localStorage
+      dataManager.saveTimeEntriesToLocalStorage(this.timeEntries);
       this.renderTimeEntries();
       this.debugLog(`Billing status toggled for entry: ${id}`);
     }
@@ -730,27 +739,17 @@ class TimeTracker {
   }
   
   /**
-   * Load time entries from localStorage
+   * Load time entries from localStorage via data manager
    */
   loadTimeEntries() {
-    try {
-      const savedEntries = localStorage.getItem('timeEntries');
-      return savedEntries ? JSON.parse(savedEntries) : [];
-    } catch (error) {
-      console.error('Error loading time entries:', error);
-      return [];
-    }
+    return dataManager.loadTimeEntriesFromLocalStorage();
   }
   
   /**
-   * Save time entries to localStorage
+   * Save time entries to localStorage via data manager
    */
   saveTimeEntries() {
-    try {
-      localStorage.setItem('timeEntries', JSON.stringify(this.timeEntries));
-    } catch (error) {
-      console.error('Error saving time entries:', error);
-    }
+    dataManager.saveTimeEntriesToLocalStorage(this.timeEntries);
   }
   
   /**

@@ -1,0 +1,46 @@
+/* Time Tracker Form */
+#time-tracker-form {
+    padding: 20px;
+    margin-bottom: 25px;
+    max-width: 900px;
+}
+
+#time-tracker-summary {
+    margin-top: 20px;
+}
+
+/* Time Tracker Display */
+.timer-display {
+    font-size: 18px;
+    font-weight: bold;
+    padding: 10px 16px;
+    background-color: var(--color-bg1);
+    border-radius: var(--button-radius);
+    margin-left: auto;
+    color: var(--color-yellow);
+    border: var(--glass-border);
+}
+
+/* Table Actions Buttons */
+#time-tracker-table .edit-button,
+#time-tracker-table .delete-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    transition: transform 0.2s ease;
+}
+
+#time-tracker-table .edit-button {
+    color: var(--color-blue);
+}
+
+#time-tracker-table .delete-button {
+    color: var(--color-red);
+}
+
+#time-tracker-table .edit-button:hover,
+#time-tracker-table .delete-button:hover {
+    transform: scale(1.2);
+}

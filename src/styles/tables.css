@@ -1,0 +1,114 @@
+/* Generic Tables */
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    background-color: var(--color-bg1);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    margin-bottom: 24px;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: var(--glass-border);
+}
+
+th, td {
+    padding: 12px 16px;
+    border: none;
+    color: var(--color-text-primary);
+    border-bottom: var(--glass-border);
+}
+
+th {
+    cursor: pointer;
+    background-color: var(--color-table-header);
+    color: var(--color-text-light);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+tr:hover {
+    background-color: var(--color-hover-highlight);
+}
+
+/* Time Statistics Tables */
+.time-stats-table {
+    width: 100%;
+    margin-bottom: 24px;
+}
+
+.time-stats-table th,
+.time-stats-table td {
+    padding: 12px 16px;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.time-stats-table th {
+    color: var(--color-text-light);
+    background-color: var(--color-bg2);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.time-stats-table tr:hover {
+    background-color: var(--color-hover-highlight);
+}
+
+.time-stats-table .team-name {
+    font-weight: 600;
+    color: var(--color-text-light);
+}
+
+.time-stats-table .unbilled-time {
+    color: var(--color-red);
+    font-weight: 500;
+}
+
+.time-stats-table .billed-time {
+    color: var(--color-green);
+    font-weight: 500;
+}
+
+.time-stats-table .total-time {
+    color: var(--color-yellow);
+    font-weight: 600;
+}
+
+/* Time Tracker Specific Tables */
+#time-tracker-table th, #time-tracker-table td {
+    text-align: left;
+    padding: 10px;
+}
+
+#time-tracker-table th {
+    background-color: var(--color-table-header);
+    color: var(--color-text-light);
+    font-weight: bold;
+}
+
+#time-tracker-table tbody tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+#time-tracker-table tbody tr:hover {
+    background-color: var(--color-hover-highlight);
+}
+
+#time-tracker-table .action-cell {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}

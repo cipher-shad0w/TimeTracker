@@ -1,36 +1,3 @@
-/**
- * TimeTracker - CSS Stylesheet (Glass Theme)
- * 
- * TABLE OF CONTENTS:
- * 
- * 1. Color System and Theming
- *    1.1 Color Variables (Dark Theme)
- *    1.2 Light Theme
- * 
- * 2. Base and Layouts
- *    2.1 General Styles
- *    2.2 Container and Content
- * 
- * 3. Main Components
- *    3.1 App Header
- *    3.2 Sidebar
- *    3.3 Theme Switch
- *    3.4 Tab Navigation
- * 
- * 4. Data Displays
- *    4.1 Generic Tables
- *    4.2 Time Statistics Tables
- * 
- * 5. Form Elements
- *    5.1 Text Inputs
- *    5.2 Select Dropdowns
- *    5.3 Buttons
- *    5.4 Form Groups
- * 
- * 6. Data Components
- *    6.1 Time Summary Cards
- *    6.2 Editable Elements
- */
 
 /* 4.1 Generic Tables */
 table {
@@ -129,80 +96,8 @@ tr:hover {
 
 
 /* 5.2 Select Dropdowns */
-/*
-.filter-select {
-    width: 100%;
-    padding: 10px 14px;
-    background-color: var(--color-bg1);
-    color: var(--color-text-primary);
-    border: var(--glass-border);
-    border-radius: var(--button-radius);
-    font-size: 14px;
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a9a9a9' d='M1.5 4L6 8.5 10.5 4 1.5 4z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 14px center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-}
-
-.filter-select:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.2);
-}
-
-.filter-select option {
-    background-color: var(--color-bg0);
-    color: var(--color-text-primary);
-    padding: 8px;
-}
-*/
 
 /* 5.3 Buttons */
-/*
-.filter-button {
-    background-color: var(--color-primary);
-    color: white;
-    border: none;
-    border-radius: var(--button-radius);
-    padding: 10px 16px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 12px;
-    transition: all 0.2s ease;
-    font-size: 14px;
-    letter-spacing: 0.3px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.filter-button:hover {
-    background-color: var(--color-primary-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.filter-reset {
-    background: none;
-    border: var(--glass-border);
-    color: var(--color-text-primary);
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    background-color: var(--color-bg1);
-    box-shadow: none;
-    margin-left: 10px;
-}
-
-.filter-reset:hover {
-    background-color: var(--color-bg2);
-    color: var(--color-text-primary);
-    transform: translateY(-2px);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-*/
 
 /* 5.4 Form Groups */
 .filter-group {
@@ -217,29 +112,7 @@ tr:hover {
     font-size: 13px;
 }
 
-/* Zeiterfassungsformular Stile
-.form-row {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 12px;
-}
 
-.form-row .filter-group {
-    flex: 1;
-    margin-bottom: 0;
-}
-
-.form-row .filter-group.full-width {
-    flex: 2;
-}
-
-.form-actions {
-    display: flex;
-    align-items: center;
-    margin-top: 25px;
-    gap: 15px;
-}
-*/
 
 .timer-button {
     background-color: var(--color-blue);
