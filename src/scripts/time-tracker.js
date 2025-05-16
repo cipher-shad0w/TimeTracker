@@ -72,6 +72,8 @@ class TimeTracker {
     this.sortDateBtn = document.getElementById('sort-date-button') || document.getElementById('sort-date-btn');
     this.filterUnbilledBtn = document.getElementById('filter-unbilled-button') || document.getElementById('filter-unbilled-btn');
     this.searchInput = document.getElementById('table-search-input');
+    // Team filter
+    this.teamFilter = document.getElementById('team-filter');
     
     // Hidden fields
     this.entryIdInput = document.getElementById('entry-id-input');
@@ -144,6 +146,13 @@ class TimeTracker {
     if (this.searchInput) {
       this.searchInput.addEventListener('input', e => {
         this.filterBySearch(e.target.value);
+      });
+    }
+    // Team filter
+    if (this.teamFilter) {
+      this.teamFilter.addEventListener('change', e => {
+        this.selectedTeamFilter = e.target.value;
+        this.renderTimeEntries();
       });
     }
   }
@@ -623,7 +632,10 @@ class TimeTracker {
     
     // Apply filters
     let filteredEntries = this.timeEntries;
-    
+    // Filter für Teammitglied
+    if (this.selectedTeamFilter && this.selectedTeamFilter !== 'ALL') {
+      filteredEntries = filteredEntries.filter(entry => entry.teamMember === this.selectedTeamFilter);
+    }
     // Filter for "Only unbilled"
     if (this.filterUnbilledBtn?.classList.contains('active')) {
       filteredEntries = filteredEntries.filter(entry => !entry.billed);
@@ -694,6 +706,40 @@ class TimeTracker {
       
       this.timeTrackerTable.appendChild(row);
     });
+    
+    // Team-Filter-Optionen aktualisieren
+    this.addTeamFilterOptions();
+  }
+  
+  /**
+   * Füllt das Team-Filter-Dropdown mit allen Teammitgliedern
+   */
+  addTeamFilterOptions() {
+    if (!this.teamFilter) return;
+    // Alle Teammitglieder aus den Einträgen sammeln
+    const members = Array.from(new Set(this.timeEntries.map(e => e.teamMember).filter(Boolean)));
+    // Aktuelle Auswahl merken
+    const current = this.teamFilter.value;
+    // Dropdown leeren
+    this.teamFilter.innerHTML = '';
+    // Option für alle
+    const allOption = document.createElement('option');
+    allOption.value = 'ALL';
+    allOption.innerHTML = '&#xf007; Alle Teammitglieder'; // FontAwesome User-Icon
+    this.teamFilter.appendChild(allOption);
+    // Optionen für jedes Teammitglied
+    members.forEach(member => {
+      const opt = document.createElement('option');
+      opt.value = member;
+      opt.textContent = member;
+      this.teamFilter.appendChild(opt);
+    });
+    // Auswahl wiederherstellen, falls möglich
+    if (members.includes(current)) {
+      this.teamFilter.value = current;
+    } else {
+      this.teamFilter.value = 'ALL';
+    }
   }
   
   /**
